@@ -1,0 +1,66 @@
+{
+	"compiler": {
+		"version": "0.7.6+commit.7338295f"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": false,
+						"internalType": "string",
+						"name": "message",
+						"type": "string"
+					}
+				],
+				"name": "Print",
+				"type": "event"
+			},
+			{
+				"inputs": [],
+				"name": "helloWorld",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			}
+		],
+		"devdoc": {
+			"kind": "dev",
+			"methods": {},
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {},
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"hello.sol": "hello"
+		},
+		"evmVersion": "istanbul",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"hello.sol": {
+			"keccak256": "0x7beaddf0dc0449ebdbd94feb35d3d3083375a331a911b868fdf51b306b6be570",
+			"license": "GPL-3.0",
+			"urls": [
+				"bzz-raw://75c23bee00dcc8644110b59fa757474c7cdeb957e8ee230c8ed8847d3bd25bf3",
+				"dweb:/ipfs/QmXwV4MWgg6sUockEs6gf2SNXhiBHXkt2JRFP7Z4BCmSNU"
+			]
+		}
+	},
+	"version": 1
+}
