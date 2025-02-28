@@ -119,11 +119,11 @@
 	},
 	"sources": {
 		"PRACTICA 4/practica4.sol": {
-			"keccak256": "0x81bedf9f34d7f81366ba874b9b5beec53da82de73e154c90d977a483a4887ff9",
+			"keccak256": "0xdac26850147f525acb35491e6130c1435211468653f6e8a375382f4446469051",
 			"license": "GPL-3.0",
 			"urls": [
-				"bzz-raw://437e7b86e97f83fce8d18750072df08184e0e15656dc0f9261ce1d534abbc17e",
-				"dweb:/ipfs/QmeYn9AkdWaM7ym5JtZeG96tNeJpvSNPc5WqipANrXnE1m"
+				"bzz-raw://bce8fbe1dc9e78554d3192a95173de25b8267a2e90bf688fb192ea148a2d47df",
+				"dweb:/ipfs/QmTho7ZjKqgqS5UYLoqah223bBJFj4C7zqkcTt1JhP8bZi"
 			]
 		}
 	},

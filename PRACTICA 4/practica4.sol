@@ -93,7 +93,7 @@ abstract contract PollingStation{
 contract DhondtPollingStation is DhondtElectionRegion, PollingStation{
     constructor(address president, uint num_partys, uint region_Id)
     PollingStation(president)
-    DhondtElectionRegion(region_Id, num_partys) {}
+    DhondtElectionRegion(num_partys, region_Id) {}
    
     function castVote(uint party_id)  external override isOpened {
         registerVote(party_id);
@@ -132,7 +132,7 @@ contract Election {
     }
 
     modifier validId(uint regionId){
-        require(address(pollingStations[regionId]) == address(0), "Debe existir una sede para esa region.");
+        require(address(pollingStations[regionId]) != address(0), "Debe existir una sede para esa region.");
         _;
     }
 
@@ -159,33 +159,33 @@ contract Election {
     } 
 
     function getResults() external onlyAuthority view returns (uint [] memory){
-        //Inicializo una variable para almacenar los resultados
-        uint[] memory results = new uint[](num_parties);
+    //Inicializo una variable para almacenar los resultados
+    uint[] memory results = new uint[](num_parties);
 
-        for (uint i=0; i < num_parties; i++) 
-        {
-            results[i]=0;   
-        }
-        
-       // Como no tenemos una lista explícita de regiones, esto es un ejemplo conceptual
-        // En un caso real, deberías almacenar una lista de regionIds creados
-        for (uint regionId = 0; regionId < 50; regionId++) { // Ejemplo con 50 regiones posibles
-            if (address(pollingStations[regionId]) != address(0)) {
-                // Comprobar si la votación ha terminado en esta sede
-                require(pollingStations[regionId].votingFinished(),  "Una o mas sedes no han terminado la votacion.");
-                
-                // Obtener los resultados de la sede
-                uint[] memory regionResults = pollingStations[regionId].getResults();
-                
-                // Acumular los resultados
-                for (uint i = 0; i < num_parties; i++) {
-                    results[i] += regionResults[i];
-                }
+    for (uint i=0; i < num_parties; i++) 
+    {
+        results[i]=0;   
+    }
+    
+    // Como no tenemos una lista explícita de regiones, esto es un ejemplo conceptual
+    // En un caso real, deberías almacenar una lista de regionIds creados
+    for (uint regionId = 0; regionId < 50; regionId++) { // Ejemplo con 50 regiones posibles
+        if (address(pollingStations[regionId]) != address(0)) {
+            // Comprobar si la votación ha terminado en esta sede
+            require(pollingStations[regionId].votingFinished(), "Una o mas sedes no han terminado la votacion.");
+            
+            // Obtener los resultados de la sede
+            uint[] memory regionResults = pollingStations[regionId].getResults();
+            
+            // Acumular los resultados
+            for (uint i = 0; i < num_parties; i++) {
+                results[i] += regionResults[i];
             }
         }
-
-        return results;
     }
+
+    return results;
+}
 
    
 }
