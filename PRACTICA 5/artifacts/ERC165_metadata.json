@@ -4,7 +4,27 @@
 	},
 	"language": "Solidity",
 	"output": {
-		"abi": [],
+		"abi": [
+			{
+				"inputs": [
+					{
+						"internalType": "bytes4",
+						"name": "interfaceID",
+						"type": "bytes4"
+					}
+				],
+				"name": "supportsInterface",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			}
+		],
 		"devdoc": {
 			"kind": "dev",
 			"methods": {},
@@ -18,7 +38,7 @@
 	},
 	"settings": {
 		"compilationTarget": {
-			"PRACTICA 5/ArrayUtils.sol": "ArrayUtils"
+			"PRACTICA 5/librerias_y_tokens.sol": "ERC165"
 		},
 		"evmVersion": "cancun",
 		"libraries": {},
@@ -38,6 +58,14 @@
 			"urls": [
 				"bzz-raw://62702c6640b02e4f7b017238d0c40800f6d7dff41e3c984a422ab0d1881e08ef",
 				"dweb:/ipfs/QmZQf4mNSf4hTpF5s13ukXs8gUixxccAxcVmJJNHCj43di"
+			]
+		},
+		"PRACTICA 5/librerias_y_tokens.sol": {
+			"keccak256": "0xc67bc6465b263bcc1dab5df8c2c2da7db5f1cd3c117ac96e2e8083efb60377d3",
+			"license": "GPL-3.0",
+			"urls": [
+				"bzz-raw://eb888f7c23d8eed6fa5fb1a5f1d7e0bf6a1289e65aa4514cbcb724e1c9ef880b",
+				"dweb:/ipfs/QmcGdkoUVcgj4bCZ7VmzuEVocKZggrYymPjTMczxWX2gPA"
 			]
 		}
 	},

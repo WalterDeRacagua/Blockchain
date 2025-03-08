@@ -1,54 +1,35 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.0;
 
+import "./ArrayUtils.sol";
 
-library ArrayUtils {
-
-
-    //Es pure y no es view porque ni modifica ni lee el estado de nada. Es más eficiente en gas.
-    function contains(string[] memory arr, string calldata val) internal pure returns(bool){
-
-
-        for (uint i =0; i < arr.length; i++)
-        {
-            if (keccak256(bytes(arr[i])) == keccak256(bytes(val))) {
-                return true;
-            }
-        }
-
-
-        return false;
-    }
-
-
-    //Los uint no necesitan ponerse memory ni nada
-    function increment(uint[] memory arr, uint8  per) internal pure {
-
-
-        for (uint i=0; i< arr.length; i++)
-        {
-            arr[i] += arr[i] * (per/100);  
-        }
-    }
-
-
-    function sum(uint[] calldata arr) internal pure returns (uint){
-
-
-        uint suma=0;
-
-
-        for (uint i=0; i< arr.length; i++)
-        {
-            suma += arr[i];  
-        }
-       
-        return suma;
-    }
+interface ERC165 {
+     function supportsInterface(bytes4 interfaceID) external view returns (bool);
 }
 
 
-contract MonsterTokens {
+interface ERC721simplified is ERC165 {
+  // EVENTS
+  event Transfer(address indexed _from, address indexed _to, uint256 indexed _tokenId);
+  event Approval(address indexed _owner, address indexed _approved, uint256 indexed _tokenId);
+
+  // APPROVAL FUNCTIONS
+  function approve(address _approved, uint256 _tokenId) external payable;
+
+  // TRANSFER FUNCTIONS
+  function transferFrom(address _from, address _to, uint256 _tokenId) external payable;
+  function safeTransferFrom(address _from, address _to, uint256 _tokenId) external payable;
+
+  // VIEW FUNCTIONS (GETTERS)
+  function balanceOf(address _owner) external view returns (uint256);
+  function ownerOf(uint256 _tokenId) external view returns (address);
+  function getApproved(uint256 _tokenId) external view returns (address);
+}
+
+
+
+/*MUY IMPORTANTE QUITAR EL ASBTRACT MÁS TARDE PORQUE SI NO SE NOS RALLA.*/
+abstract contract MonsterTokens is ERC721simplified {
 
     struct Weapons {
         string[] names; // name of the weapon
@@ -155,5 +136,6 @@ contract MonsterTokens {
         require(profits >0, "No hay beneficios para recoger");
         payable (contractOwner).transfer(profits); //Transferimos los beneficios al poseedor del contrato.
     }
+
 
 }
