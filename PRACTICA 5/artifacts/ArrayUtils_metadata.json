@@ -1,0 +1,45 @@
+{
+	"compiler": {
+		"version": "0.8.26+commit.8a97fa7a"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [],
+		"devdoc": {
+			"kind": "dev",
+			"methods": {},
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {},
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"PRACTICA 5/librerias_y_tokens.sol": "ArrayUtils"
+		},
+		"evmVersion": "cancun",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"PRACTICA 5/librerias_y_tokens.sol": {
+			"keccak256": "0x025a0a6e4dbe1ccc566df47c28803492726886aa0ebbd755047cf47ddd49b689",
+			"license": "GPL-3.0",
+			"urls": [
+				"bzz-raw://a9b3c75d9597532093fa767cf8f47cf0e0200c10b3705c917219b71754e5dc00",
+				"dweb:/ipfs/QmPMeVjvGM24imMdbxXXZGpCnHh1sdcrYsw3efew1yboAv"
+			]
+		}
+	},
+	"version": 1
+}

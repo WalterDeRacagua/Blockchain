@@ -1,0 +1,185 @@
+{
+	"compiler": {
+		"version": "0.8.26+commit.8a97fa7a"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [
+			{
+				"inputs": [],
+				"stateMutability": "nonpayable",
+				"type": "constructor"
+			},
+			{
+				"inputs": [],
+				"name": "WEIS_NECESARIOS",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "character_tokenId",
+						"type": "uint256"
+					},
+					{
+						"internalType": "string",
+						"name": "weapon_name",
+						"type": "string"
+					},
+					{
+						"internalType": "uint256",
+						"name": "fire_power",
+						"type": "uint256"
+					}
+				],
+				"name": "addWeapon",
+				"outputs": [],
+				"stateMutability": "payable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"name": "characters",
+				"outputs": [
+					{
+						"internalType": "string",
+						"name": "name",
+						"type": "string"
+					},
+					{
+						"components": [
+							{
+								"internalType": "string[]",
+								"name": "names",
+								"type": "string[]"
+							},
+							{
+								"internalType": "uint256[]",
+								"name": "firePowers",
+								"type": "uint256[]"
+							}
+						],
+						"internalType": "struct MonsterTokens.Weapons",
+						"name": "weapons",
+						"type": "tuple"
+					},
+					{
+						"internalType": "address",
+						"name": "tokenOwner",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "collectProfits",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "string",
+						"name": "character_name",
+						"type": "string"
+					}
+				],
+				"name": "createMonsterToken",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "payable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "character_tokenId",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint8",
+						"name": "inc_per",
+						"type": "uint8"
+					}
+				],
+				"name": "incrementFirePower",
+				"outputs": [],
+				"stateMutability": "payable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "token",
+						"type": "uint256"
+					}
+				],
+				"name": "removeMonsterToken",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			}
+		],
+		"devdoc": {
+			"kind": "dev",
+			"methods": {},
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {},
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"PRACTICA 5/librerias_y_tokens.sol": "MonsterTokens"
+		},
+		"evmVersion": "cancun",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"PRACTICA 5/librerias_y_tokens.sol": {
+			"keccak256": "0x025a0a6e4dbe1ccc566df47c28803492726886aa0ebbd755047cf47ddd49b689",
+			"license": "GPL-3.0",
+			"urls": [
+				"bzz-raw://a9b3c75d9597532093fa767cf8f47cf0e0200c10b3705c917219b71754e5dc00",
+				"dweb:/ipfs/QmPMeVjvGM24imMdbxXXZGpCnHh1sdcrYsw3efew1yboAv"
+			]
+		}
+	},
+	"version": 1
+}
