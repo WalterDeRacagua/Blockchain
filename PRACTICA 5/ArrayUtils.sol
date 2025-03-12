@@ -31,7 +31,7 @@ library ArrayUtils {
     }
 
 
-    function sum(uint[] calldata arr) internal pure returns (uint){
+    function sum(uint[] memory arr) internal pure returns (uint){
 
 
         uint suma=0;

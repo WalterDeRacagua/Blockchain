@@ -366,11 +366,11 @@
 			]
 		},
 		"PRACTICA 5/librerias_y_tokens.sol": {
-			"keccak256": "0xc67bc6465b263bcc1dab5df8c2c2da7db5f1cd3c117ac96e2e8083efb60377d3",
+			"keccak256": "0x047c544e4ec4a6da19fa19b4c1ecfd9e8b87690162b4983b983ed067af2d324a",
 			"license": "GPL-3.0",
 			"urls": [
-				"bzz-raw://eb888f7c23d8eed6fa5fb1a5f1d7e0bf6a1289e65aa4514cbcb724e1c9ef880b",
-				"dweb:/ipfs/QmcGdkoUVcgj4bCZ7VmzuEVocKZggrYymPjTMczxWX2gPA"
+				"bzz-raw://dad0e127e468bc58e64695b645b915c43a002893d6ef092a96f0c20e884fcb93",
+				"dweb:/ipfs/QmVLrhF9Hf6vb5vnco4TUkxrTeTAeDYsus5yq4pecRvHCa"
 			]
 		}
 	},

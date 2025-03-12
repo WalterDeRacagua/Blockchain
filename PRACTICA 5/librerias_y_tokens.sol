@@ -45,6 +45,7 @@ abstract contract MonsterTokens is ERC721simplified {
 
     uint private tokenId=10000;
     mapping (uint => Character) public characters;
+    mapping (uint => address) private approved; //Aquí almacenamos aquellos que esten aprobados para enviar
     uint num_characters=0; //Numero de personajes que hays
     address private contractOwner;//Propietario del contrato (se necesita al final)
 
@@ -136,6 +137,60 @@ abstract contract MonsterTokens is ERC721simplified {
         require(profits >0, "No hay beneficios para recoger");
         payable (contractOwner).transfer(profits); //Transferimos los beneficios al poseedor del contrato.
     }
+
+
+  // APPROVAL FUNCTIONS
+  function approve(address _approved, uint256 _tokenId) external payable override {
+        require(msg.sender == characters[_tokenId].tokenOwner, "Emisor debe ser propietario del token");
+        require(characters[_tokenId].tokenOwner != address(0), "Token no existe");
+
+        
+        uint cantidad = ArrayUtils.sum(characters[_tokenId].weapons.firePowers);
+
+        require(msg.value >= cantidad, "Debes enviar al menos la suma de las potencias de fuego en Wei");
+
+        approved[_tokenId] = _approved; //Guardamos el address de la dirección approved para ese tokenId.
+
+        emit Approval(msg.sender, _approved, _tokenId);
+}
+
+  // TRANSFER FUNCTIONS
+  function transferFrom(address _from, address _to, uint256 _tokenId) external payable{
+        //Transferir la propiedad de un token a otro propietario.
+        require(msg.sender == characters[_tokenId].tokenOwner || msg.sender == approved[_tokenId], "Emisor debe ser el poseedor del token o el que tiene aprobacion para hacer cosas con el token");
+        require(characters[_tokenId].tokenOwner == _from, "No lo dice el enunciado, pero creo que el from es siempre el que posee el token, sin necesidad de que sea este el que ejecuta la operacion");
+
+        uint cantidad = ArrayUtils.sum(characters[_tokenId].weapons.firePowers);
+        require(msg.value>= cantidad, "Debes enviar al menos la suma de las potencias de fuego en Wei");
+
+        //cambiamos el owner del token
+        characters[_tokenId].tokenOwner = _to;
+
+        //Da igual que haya sido un approved el que haya intermediado la transferencia, envíamos al ex-poseedor del token y al acutal poseedor.
+        emit Transfer(_from, _to, _tokenId);  
+  }
+  function safeTransferFrom(address _from, address _to, uint256 _tokenId) external payable{
+        
+
+  }
+
+  // VIEW FUNCTIONS (GETTERS)
+  function balanceOf(address _owner) external view returns (uint256){
+        require(_owner != address(0), "El usuario debe tener balance");
+        return 10;
+  }
+  function ownerOf(uint256 _tokenId) external view returns (address){
+        require(characters[tokenId].tokenOwner != address(0), "Token no existe");
+        
+        //Aquí me devuelvo el owner del token.
+        return characters[_tokenId].tokenOwner; 
+}
+  function getApproved(uint256 _tokenId) external view returns (address){
+        require(approved[_tokenId] != address(0), "Token no existe");
+
+        //Aquí me devuelvo el aprobado del token.
+        return approved[_tokenId];
+  }
 
 
 }
