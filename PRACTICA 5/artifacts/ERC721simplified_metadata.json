@@ -169,7 +169,7 @@
 						"type": "bool"
 					}
 				],
-				"stateMutability": "view",
+				"stateMutability": "pure",
 				"type": "function"
 			},
 			{
@@ -224,19 +224,19 @@
 	},
 	"sources": {
 		"PRACTICA 5/ArrayUtils.sol": {
-			"keccak256": "0x3c4e5a288d82286bceebc7c1c64733a9cf292cfe1e952546ac2a711b27d1c271",
+			"keccak256": "0xb60fdb3dc66671e000281daffc9e7a2100a447d6ca2cb402bb947d67608d79d4",
 			"license": "GPL-3.0",
 			"urls": [
-				"bzz-raw://62702c6640b02e4f7b017238d0c40800f6d7dff41e3c984a422ab0d1881e08ef",
-				"dweb:/ipfs/QmZQf4mNSf4hTpF5s13ukXs8gUixxccAxcVmJJNHCj43di"
+				"bzz-raw://d382fffd4c640e8f37e1ce88dcb881e0c0e9fd4f970525a0620ca5081f5ff9c3",
+				"dweb:/ipfs/QmQy4FfrHfpAuWYZ46Ws4RoCCuyEPicre2YC48xogjZUqY"
 			]
 		},
 		"PRACTICA 5/librerias_y_tokens.sol": {
-			"keccak256": "0x047c544e4ec4a6da19fa19b4c1ecfd9e8b87690162b4983b983ed067af2d324a",
+			"keccak256": "0x7d572a94ebfc616fd9de0025e8cdf183c3c1ad66cbf36803cb55f1ae11609e18",
 			"license": "GPL-3.0",
 			"urls": [
-				"bzz-raw://dad0e127e468bc58e64695b645b915c43a002893d6ef092a96f0c20e884fcb93",
-				"dweb:/ipfs/QmVLrhF9Hf6vb5vnco4TUkxrTeTAeDYsus5yq4pecRvHCa"
+				"bzz-raw://dd86f9d87d3110cbf7dde62bf82707714a220d4b6ee5dc7457711d853405bd8c",
+				"dweb:/ipfs/QmVqTTqoVEE4HoNJQRWyrUfK4eoqmxERE47yvsRxEeo8JS"
 			]
 		}
 	},

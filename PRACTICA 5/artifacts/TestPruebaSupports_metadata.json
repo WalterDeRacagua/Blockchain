@@ -1,0 +1,101 @@
+{
+	"compiler": {
+		"version": "0.8.26+commit.8a97fa7a"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [
+			{
+				"inputs": [],
+				"name": "ERC165_INTERFACE_ID",
+				"outputs": [
+					{
+						"internalType": "bytes4",
+						"name": "",
+						"type": "bytes4"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "ERC721_INTERFACE_ID",
+				"outputs": [
+					{
+						"internalType": "bytes4",
+						"name": "",
+						"type": "bytes4"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "monsterToken",
+						"type": "address"
+					}
+				],
+				"name": "testSupportsInterface",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					},
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					},
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "pure",
+				"type": "function"
+			}
+		],
+		"devdoc": {
+			"kind": "dev",
+			"methods": {},
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {},
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"PRACTICA 5/pruebaSupportsInterface.sol": "TestPruebaSupports"
+		},
+		"evmVersion": "cancun",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"PRACTICA 5/pruebaSupportsInterface.sol": {
+			"keccak256": "0x49dc2d1002635d6215505d9629fd17e5a0348ee5d3324061e677e4eed4ca8e87",
+			"license": "GPL-3.0",
+			"urls": [
+				"bzz-raw://c3143dcb3c6071ad6ad5d29f902898a7e7f27425f57ec25e9f58380ca2e25378",
+				"dweb:/ipfs/QmRqgbnEzR1dbp2LEo1RYCdgw1CZtiPwPtHqcuY74oQEXT"
+			]
+		}
+	},
+	"version": 1
+}

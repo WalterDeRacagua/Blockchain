@@ -6,15 +6,51 @@
 	"output": {
 		"abi": [
 			{
-				"inputs": [
+				"inputs": [],
+				"name": "ERC165_INTERFACE_ID",
+				"outputs": [
 					{
 						"internalType": "bytes4",
-						"name": "interfaceID",
+						"name": "",
 						"type": "bytes4"
 					}
 				],
-				"name": "supportsInterface",
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "ERC721_INTERFACE_ID",
 				"outputs": [
+					{
+						"internalType": "bytes4",
+						"name": "",
+						"type": "bytes4"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "monsterToken",
+						"type": "address"
+					}
+				],
+				"name": "pruebaSupportsInterface",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					},
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					},
 					{
 						"internalType": "bool",
 						"name": "",
@@ -38,7 +74,7 @@
 	},
 	"settings": {
 		"compilationTarget": {
-			"PRACTICA 5/pruebaSupportsInterface.sol": "ERC165"
+			"PRACTICA 5/pruebaSupportsInterface.sol": "PruebaSupportsInterface"
 		},
 		"evmVersion": "cancun",
 		"libraries": {},

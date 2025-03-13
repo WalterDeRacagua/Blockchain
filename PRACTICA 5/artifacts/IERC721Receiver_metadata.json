@@ -1,0 +1,88 @@
+{
+	"compiler": {
+		"version": "0.8.26+commit.8a97fa7a"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "operator",
+						"type": "address"
+					},
+					{
+						"internalType": "address",
+						"name": "from",
+						"type": "address"
+					},
+					{
+						"internalType": "uint256",
+						"name": "tokenId",
+						"type": "uint256"
+					},
+					{
+						"internalType": "bytes",
+						"name": "data",
+						"type": "bytes"
+					}
+				],
+				"name": "onERC721Received",
+				"outputs": [
+					{
+						"internalType": "bytes4",
+						"name": "",
+						"type": "bytes4"
+					}
+				],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			}
+		],
+		"devdoc": {
+			"kind": "dev",
+			"methods": {},
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {},
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"PRACTICA 5/librerias_y_tokens.sol": "IERC721Receiver"
+		},
+		"evmVersion": "cancun",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"PRACTICA 5/ArrayUtils.sol": {
+			"keccak256": "0xb60fdb3dc66671e000281daffc9e7a2100a447d6ca2cb402bb947d67608d79d4",
+			"license": "GPL-3.0",
+			"urls": [
+				"bzz-raw://d382fffd4c640e8f37e1ce88dcb881e0c0e9fd4f970525a0620ca5081f5ff9c3",
+				"dweb:/ipfs/QmQy4FfrHfpAuWYZ46Ws4RoCCuyEPicre2YC48xogjZUqY"
+			]
+		},
+		"PRACTICA 5/librerias_y_tokens.sol": {
+			"keccak256": "0x7d572a94ebfc616fd9de0025e8cdf183c3c1ad66cbf36803cb55f1ae11609e18",
+			"license": "GPL-3.0",
+			"urls": [
+				"bzz-raw://dd86f9d87d3110cbf7dde62bf82707714a220d4b6ee5dc7457711d853405bd8c",
+				"dweb:/ipfs/QmVqTTqoVEE4HoNJQRWyrUfK4eoqmxERE47yvsRxEeo8JS"
+			]
+		}
+	},
+	"version": 1
+}
