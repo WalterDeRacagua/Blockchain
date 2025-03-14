@@ -87,4 +87,4 @@ Agradecemos a todas las personas que han contribuido a este proyecto:
 <a name="item7"></a>
 ## 📜 Licencia
 
-Este proyecto está bajo la licencia [Apache License](LICENSE).
+
