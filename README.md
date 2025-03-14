@@ -10,9 +10,8 @@ Planify es una aplicación de escritorio que permite a los usuarios crear, compa
 - [Uso](#item3)
 - [Tecnologías Utilizadas](#item4)
 - [Material Externo](#item5)
-- [Contribución](#item6)
-- [Contribuidores](#item7)
-- [Licencia](#item8)
+- [Contribuidores](#item6)
+- [Licencia](#item7)
 
 <a name="item1"></a>
 ## 🖥️ Diseño de la Aplicación
@@ -29,10 +28,6 @@ Planify ofrece una interfaz intuitiva con vistas. A continuación, se detallan l
 ## 🚀 Instalación
 
 Sigue estos pasos para instalar y ejecutar Planify en tu máquina local:
-
-1. Clona el repositorio:
-   ```bash
-   git clone https://github.com/usuario/planify.git
 
 ## 📌 Uso
 
@@ -63,49 +58,33 @@ Sigue estos pasos para instalar y ejecutar Planify en tu máquina local:
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-%23336791.svg?style=for-the-badge&logo=postgresql&logoColor=white)  
 > **Descripción:** Elegimos PostgreSQL para la gestión de la base de datos debido a su robustez y la experiencia previa del equipo con esta herramienta.  
 > *Estructura de la base de datos (pendiente de actualización):*  
-> `<img src="bd.png" alt="Estructura de la Base de Datos" width="800"/>`
 
 ### Contenerización
 ![Docker](https://img.shields.io/badge/Docker-%232496ED.svg?style=for-the-badge&logo=docker&logoColor=white)  
 > **Descripción:** Docker nos permite empaquetar la aplicación y sus dependencias en contenedores aislados, garantizando que Planify se ejecute consistentemente en cualquier entorno, independientemente del sistema operativo o configuración.
 
-A continuación, se muestra la estructura de la base de datos utilizada en el proyecto:
-
-<img src="bd.png" alt="Estructura de la Base de Datos" width="800"/>
-
-### Notificaciones
-![WebSockets](https://img.shields.io/badge/websockets-%23009688.svg?style=for-the-badge&logo=websocket&logoColor=white)
-### Mapas Interactivos
-![Google Maps](https://img.shields.io/badge/Google%20Maps-%234285F4.svg?style=for-the-badge&logo=googlemaps&logoColor=white)
-
 <a name="item5"></a>
 ## 🔎 Material externo
 
-En esta sección hemos incluído enlaces a material externo sobre el que nos hemos apoyado para realizar algunas partes de la web ParkIT 🚘:
+En esta sección hemos incluído enlaces a material externo sobre el que nos hemos apoyado para realizar algunas partes de Planify 🗓️:
 
-1. Users-card: hemos utilizado una [plantilla de Bootstrap](https://startbootstrap.com/theme/personal). Dicha plantilla se puede utilizar y modificar por presentar una licencia MIT.
-2. Navbar: Hemos utilizado la documentación que ofrece [Bootstrap](https://getbootstrap.com/docs/5.3/components/navbar/).
-3. Extension en VSCode: para el uso de Bootstrap y elementos preconstruidos, [Bootstrap 5 Quick Snippets](https://github.com/anburocky3/bootstrap5-snippets/tree/master)
+1. Google Java Style Guide: para seguir estándares de codificación
 
 <a name="item6"></a>
-## 🤝 Contribución
-
-1. Haz un fork del repositorio.
-2. Crea una rama nueva (`git checkout -b feature-nueva`).
-3. Realiza tus cambios y haz un commit (`git commit -m 'Agrega nueva funcionalidad'`).
-4. Envía un pull request.
-<a name="item7"></a>
 ## 👥 Contribuidores
 
 Agradecemos a todas las personas que han contribuido a este proyecto:
-- [Javier Aceituno Monja](https://github.com/jaceituno16)
-- [Alex Guillermo Bonilla Taco](https://github.com/alexboni97)
-- [Juan Pablo Fernández de la Torre](https://github.com/juanpf04)
-- [Paula López Solla](https://github.com/Paula211)
-- [Adrián Rodríguez Margallo](https://github.com/adrizz8)
-- [Sergio Sánchez Carrasco](https://github.com/WalterDeRacagua) 
+- [RODRIGO BAÑOS FERNÁNDEZ](https://github.com/Rodribanfer5)
+- [SERGIO BARBAS VÁZQUEZ](https://github.com/SerBarbas)
+- [JAVIER ALEJANDRO CARDONA ARCE](https://github.com/Javykas)
+- [SERGIO CRISTOBAL GAMBAU](https://github.com/SergiCristobal)
+- [CARLOS GARCÍA JIMÉNEZ](https://github.com/AstroxGDY)
+- [JORGE LUMBRERAS CAMPS](https://github.com/Bear-03)
+- [ADRIÁN RODRÍGUEZ MARGALLO](https://github.com/adrizz8)
+- [GUILLERMO SÁNCHEZ PÉREZ](https://github.com/guillesanper)
+- [WEIHONG ZHU](https://github.com/whz0) 
 
-<a name="item8"></a>
+<a name="item7"></a>
 ## 📜 Licencia
 
 Este proyecto está bajo la licencia [Apache License](LICENSE).
