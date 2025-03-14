@@ -43,15 +43,31 @@ Sigue estos pasos para instalar y ejecutar Planify en tu máquina local:
 <a name="item4"></a>
 ## 🛠 Tecnologías Utilizadas
 
-### Frontend
+### Entorno de Desarrollo
+![IntelliJ](https://img.shields.io/badge/IntelliJ-%23000000.svg?style=for-the-badge&logo=intellij-idea&logoColor=white)  
+> **Descripción:** Usamos IntelliJ para el desarrollo del código fuente del proyecto, integrando herramientas para frontend y backend. Lo elegimos por su soporte nativo para Git, Docker y frameworks como Spring, optimizando nuestro flujo de trabajo.
 
-![SceneBuilder](https://img.shields.io/badge/SceneBuilder-%230092CC.svg?style=for-the-badge&logo=java&logoColor=white) ![JavaFX](https://img.shields.io/badge/JavaFX-%23FF6200.svg?style=for-the-badge&logo=java&logoColor=white)
+### Frontend
+![SceneBuilder](https://img.shields.io/badge/SceneBuilder-%230092CC.svg?style=for-the-badge&logo=java&logoColor=white) ![JavaFX](https://img.shields.io/badge/JavaFX-%23FF6200.svg?style=for-the-badge&logo=java&logoColor=white)  
+> **Descripción:** SceneBuilder facilita la creación visual de interfaces gráficas (GUIs) para JavaFX mediante un enfoque drag-and-drop, generando automáticamente archivos FXML que definen la estructura de la interfaz.
 
 ### Backend
-![Java](https://img.shields.io/badge/java-%23ED8B00.svg?style=for-the-badge&logo=openjdk&logoColor=white)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-%236DB33F.svg?style=for-the-badge&logo=springboot&logoColor=white)  
+> **Descripción:** Extensión de Spring Framework que simplifica la creación de proyectos Java con configuraciones predeterminadas, soporte para conexiones a bases de datos y compatibilidad con el modelo MVC empleado en el proyecto.
+
+### Gestión de Dependencias
+![Maven](https://img.shields.io/badge/Maven-%23C71A36.svg?style=for-the-badge&logo=apachemaven&logoColor=white)  
+> **Descripción:** Utilizamos Maven por su facilidad para gestionar dependencias y desplegar proyectos Java, asegurando una construcción eficiente y reproducible.
 
 ### Base de Datos
-![H2](https://img.shields.io/badge/h2-%230092CC.svg?style=for-the-badge&logo=h2&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-%23336791.svg?style=for-the-badge&logo=postgresql&logoColor=white)  
+> **Descripción:** Elegimos PostgreSQL para la gestión de la base de datos debido a su robustez y la experiencia previa del equipo con esta herramienta.  
+> *Estructura de la base de datos (pendiente de actualización):*  
+> `<img src="bd.png" alt="Estructura de la Base de Datos" width="800"/>`
+
+### Contenerización
+![Docker](https://img.shields.io/badge/Docker-%232496ED.svg?style=for-the-badge&logo=docker&logoColor=white)  
+> **Descripción:** Docker nos permite empaquetar la aplicación y sus dependencias en contenedores aislados, garantizando que Planify se ejecute consistentemente en cualquier entorno, independientemente del sistema operativo o configuración.
 
 A continuación, se muestra la estructura de la base de datos utilizada en el proyecto:
 
