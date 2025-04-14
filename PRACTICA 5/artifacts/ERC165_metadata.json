@@ -38,7 +38,7 @@
 	},
 	"settings": {
 		"compilationTarget": {
-			"PRACTICA 5/pruebaSupportsInterface.sol": "ERC165"
+			"PRACTICA 5/librerias_y_tokens.sol": "ERC165"
 		},
 		"evmVersion": "cancun",
 		"libraries": {},
@@ -52,12 +52,20 @@
 		"remappings": []
 	},
 	"sources": {
-		"PRACTICA 5/pruebaSupportsInterface.sol": {
-			"keccak256": "0x8b7a63b2ca1273d6d4108f6f6e342a51fa3251f9c8ccbdf962c538e20bd10931",
+		"PRACTICA 5/ArrayUtils.sol": {
+			"keccak256": "0xb60fdb3dc66671e000281daffc9e7a2100a447d6ca2cb402bb947d67608d79d4",
 			"license": "GPL-3.0",
 			"urls": [
-				"bzz-raw://c2dc61983096a190bb05c6febee4fd2dab190a962bd2600e0bdf24b232df819d",
-				"dweb:/ipfs/Qmbdf23aF3v8tZKRAPY1AeGTkSy9VPMSs1RLujfujJpHaW"
+				"bzz-raw://d382fffd4c640e8f37e1ce88dcb881e0c0e9fd4f970525a0620ca5081f5ff9c3",
+				"dweb:/ipfs/QmQy4FfrHfpAuWYZ46Ws4RoCCuyEPicre2YC48xogjZUqY"
+			]
+		},
+		"PRACTICA 5/librerias_y_tokens.sol": {
+			"keccak256": "0x44ace83e5dbcda1f3399930727968e76e502589faa80cc6211116b6167e19981",
+			"license": "GPL-3.0",
+			"urls": [
+				"bzz-raw://fffa40e342b44d40465ba8335c24a7ffb3412f1846a636a4be51513f83684b4b",
+				"dweb:/ipfs/QmfA8tqLNvbd96fBWodj8PW49CVRNQTvkfU2MXSZ3vaHE8"
 			]
 		}
 	},
