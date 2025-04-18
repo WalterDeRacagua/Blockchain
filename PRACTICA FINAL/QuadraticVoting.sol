@@ -47,7 +47,7 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
     }
 
     mapping (uint => Proposal) public proposals;//Id de la propuesta-> propuesta
-    uint256[] public proposalsArray;
+    uint256[] public proposalsArray; 
 
     uint256 public numProposals; //Numero de propuestas
     uint256 public numPendingProposals; //Propuestas de financiación pendientes.
