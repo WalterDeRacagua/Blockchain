@@ -146,11 +146,13 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         newProposal._contractProposal= proposalContract;
         newProposal._creator=msg.sender;
 
-        if (_budget>0)  {
-            newProposal._isSignalign= true;
+        if (budget > 0)  {
+            newProposal._isSignalign= false;
+            /*Aumentamos el número de propuestas pendientes*/
+            numPendingProposals++;
         }
         else {
-            newProposal._isSignalign= false;
+            newProposal._isSignalign= true ;
         }
 
         newProposal._votes=0;
@@ -160,28 +162,55 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         return proposalId;
     }
     
-    function executeProposal (uint proposalId, uint numVotes, uint numTokens) public payable {
-
-    
-    
-    }
-
     function cancelProposal (uint idProposal) public onlyAfterOpen {
+        require(idProposal > numProposals, "No existe esa propuesta");
+        require(msg.sender == proposals[idProposal]._creator, "No puedes cancelar la propuesta si no eres el creador de la misma");
+        require(!proposals[idProposal]._isApproved, "No se pueden aprobar propuestas ya aprobadas.");
+        require(!proposals[idProposal]._isCanceled, "No se puede cancelar si la propuesta ya ha sido cancelada anteriormente");
 
+        proposals[idProposal]._isCanceled=true;//Cancelamos la propuesta
+
+        //Si es de financiación...
+        if (!proposals[idProposal]._isSignalign){ 
+            numPendingProposals--;
+        }
+
+        /*FALTA DEVOLVER LOS TOKENS COMPRADOS.*/
     }
 
     /*Tendré que cambiar lo de view porque no es inmutable.*/
-    function buyTokens() view public{
+    function buyTokens() public payable {
+        require(participants[msg.sender], "Para comprar tokens necesitas haberte inscrito como participante");
+        require(msg.value >= votingContract.getTokenPrice(), "Debes enviar el Ether necesario para poder comprar al menos un token");
 
 
-        /*INFORMARME MÁS SOBRE ESTA FUNCIÓN*/
+        /*Revisar esto porque hay que tener en cuenta los que ha ha comprado.*/
+        uint256 boughtTokens = msg.value/ votingContract.getTokenPrice();
+        require(boughtTokens >= 1, "Necesitas comprar al menos un Token");
+
+        
+    /*
+    PARA RECORDARLO YO: El término "mintear" proviene del inglés "mint", que significa "acuñar" o "crear"
+    en el contexto de monedas o activos
+    */
+        votingContract.mint(msg.sender, boughtTokens);
     }
 
-    function sellTokens () view public {
+    function sellTokens (uint256 tokensToReturn) view public {
+        require(participants[msg.sender], "Para comprar tokens necesitas haberte inscrito como participante");
+        require(tokensToReturn > 0, "No puedes vender una cantidad inferior a 1 token.");
+        require(votingContract.balanceOf(msg.sender)>= tokensToReturn, "No puedes vender mas tokens de los que posees");
 
+        /*Aquí tendríamos que reducir la cantidad de tokens del msg.sender. Hay que revisar porque es cuadrático y eso aun 
+        no lo estamos barajando*/
 
-        /*Aquí tendríamos que reducir la cantidad de tokens del msg.sender.*/
+        uint256 refund = tokensToReturn * votingContract.getTokenPrice();
+        require(address(this).balance >= refund, "El contrato no tiene recursos para devolverte el Ether.");
+
+        votingContract.burn(msg.sender, tokensToReturn); //Los borramos de la cuenta del contrato para no estar volviendo
+
         /*Le debemos de ingresar el Ether correspondiente a la cantidad de tokens que devuelve.*/
+        payable(msg.sender).transfer(refund); //Le devolvemos el valor de la devolución, de momento ese valor esta mal porque no lo calculamos correctamente
     }
 
     function getERC20() external returns (address) {
@@ -193,7 +222,7 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
     function getPendingProposals() external view onlyAfterOpen returns (uint[] memory pendingIdentifiers){
 
 
-        return
+        
     }
 
     /*De tipo view porque simplemente devolvemos un array con los identificadores de propuestas APROBADAS*/
