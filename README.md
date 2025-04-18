@@ -48,7 +48,7 @@ Utilizamos herramientas actuales del ecosistema blockchain para desarrollar, pro
 
 Agradecemos la participación de los estudiantes y docentes que han hecho posible esta asignatura:  
 
-- Sergio Sánchea Carrasco  
+- Sergio Sánchez Carrasco  
 
 ## 📜 Licencia  
 
