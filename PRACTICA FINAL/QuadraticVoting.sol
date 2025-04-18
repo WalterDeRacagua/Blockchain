@@ -47,6 +47,7 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
     }
 
     mapping (uint => Proposal) public proposals;//Id de la propuesta-> propuesta
+    uint256[] public proposalsArray;
 
     uint256 public numProposals; //Numero de propuestas
     uint256 public numPendingProposals; //Propuestas de financiación pendientes.
@@ -159,6 +160,9 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         newProposal._isApproved=false;
         newProposal._isCanceled=false;
 
+        if (!newProposal._isSignalign) {
+            proposalsArray.push(proposalId);    
+        }
         return proposalId;
     }
     
@@ -213,16 +217,16 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         payable(msg.sender).transfer(refund); //Le devolvemos el valor de la devolución, de momento ese valor esta mal porque no lo calculamos correctamente
     }
 
-    function getERC20() external returns (address) {
+    function getERC20() external view returns (address) {
 
-
+        //Getter de toda la vida que devuelve el address del contrato ERC20. No creo que tenga mayor misterio que esto.
+        return address(votingContract);
     }
 
     /*De tipo view porque simplemente devolvemos un array con los identificadores de propuestas DE FINANCIACIÓN PENDIENTES*/
     function getPendingProposals() external view onlyAfterOpen returns (uint[] memory pendingIdentifiers){
 
-
-        
+                
     }
 
     /*De tipo view porque simplemente devolvemos un array con los identificadores de propuestas APROBADAS*/
