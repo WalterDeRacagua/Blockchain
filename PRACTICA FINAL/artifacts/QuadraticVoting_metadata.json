@@ -6,7 +6,18 @@
 	"output": {
 		"abi": [
 			{
-				"inputs": [],
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "_tokenPrice",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "_maxTokens",
+						"type": "uint256"
+					}
+				],
 				"stateMutability": "nonpayable",
 				"type": "constructor"
 			},
@@ -36,7 +47,7 @@
 					},
 					{
 						"internalType": "address",
-						"name": "contr",
+						"name": "proposalContract",
 						"type": "address"
 					}
 				],
@@ -62,7 +73,7 @@
 				"inputs": [],
 				"name": "buyTokens",
 				"outputs": [],
-				"stateMutability": "view",
+				"stateMutability": "payable",
 				"type": "function"
 			},
 			{
@@ -91,7 +102,7 @@
 				"outputs": [
 					{
 						"internalType": "uint256[]",
-						"name": "approvedIdentifiers",
+						"name": "",
 						"type": "uint256[]"
 					}
 				],
@@ -108,7 +119,7 @@
 						"type": "address"
 					}
 				],
-				"stateMutability": "nonpayable",
+				"stateMutability": "view",
 				"type": "function"
 			},
 			{
@@ -117,7 +128,7 @@
 				"outputs": [
 					{
 						"internalType": "uint256[]",
-						"name": "pendingIdentifiers",
+						"name": "",
 						"type": "uint256[]"
 					}
 				],
@@ -175,11 +186,83 @@
 								"internalType": "address",
 								"name": "_contractProposal",
 								"type": "address"
+							},
+							{
+								"internalType": "address",
+								"name": "_creator",
+								"type": "address"
+							},
+							{
+								"internalType": "bool",
+								"name": "_isSignalign",
+								"type": "bool"
+							},
+							{
+								"internalType": "bool",
+								"name": "_isApproved",
+								"type": "bool"
+							},
+							{
+								"internalType": "bool",
+								"name": "_isCanceled",
+								"type": "bool"
 							}
 						],
-						"internalType": "struct QuadraticVoting.Proposal",
-						"name": "p",
+						"internalType": "struct QuadraticVoting.ProposalInfo",
+						"name": "",
 						"type": "tuple"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "getSignalingProposals",
+				"outputs": [
+					{
+						"internalType": "uint256[]",
+						"name": "",
+						"type": "uint256[]"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "numParticipants",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "numPendingProposals",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "numProposals",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
 					}
 				],
 				"stateMutability": "view",
@@ -189,7 +272,26 @@
 				"inputs": [],
 				"name": "openVoting",
 				"outputs": [],
-				"stateMutability": "nonpayable",
+				"stateMutability": "payable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"name": "participants",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "view",
 				"type": "function"
 			},
 			{
@@ -241,6 +343,45 @@
 						"internalType": "address",
 						"name": "_contractProposal",
 						"type": "address"
+					},
+					{
+						"internalType": "address",
+						"name": "_creator",
+						"type": "address"
+					},
+					{
+						"internalType": "bool",
+						"name": "_isSignalign",
+						"type": "bool"
+					},
+					{
+						"internalType": "bool",
+						"name": "_isApproved",
+						"type": "bool"
+					},
+					{
+						"internalType": "bool",
+						"name": "_isCanceled",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"name": "proposalsArray",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
 					}
 				],
 				"stateMutability": "view",
@@ -254,10 +395,16 @@
 				"type": "function"
 			},
 			{
-				"inputs": [],
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "tokensToReturn",
+						"type": "uint256"
+					}
+				],
 				"name": "sellTokens",
 				"outputs": [],
-				"stateMutability": "view",
+				"stateMutability": "nonpayable",
 				"type": "function"
 			},
 			{
@@ -338,19 +485,19 @@
 	},
 	"sources": {
 		"PRACTICA FINAL/QuadraticVoting.sol": {
-			"keccak256": "0xd16fe7f69e7950bc2654c9e81e7aae9e6fc02d641946b79f4c4d7522c687a9ee",
+			"keccak256": "0x1c5b61260f9eb2ef0d51a388ee22bb04439ba0efcddbf5216fe15df632113a54",
 			"license": "GPL-3.0",
 			"urls": [
-				"bzz-raw://d6642ac3c4f2dea5ed331c77eb4f8403f7515c3b237bd5c152b321fdf481ca78",
-				"dweb:/ipfs/QmQPLsHAeBBWFUD1u5tQEHw4z7L17eMyp54Sd4w9MYwM7P"
+				"bzz-raw://eca06cb9a0c49dee3d532cf32b4a347672f6d9a3084001467b0c87453d61f8f4",
+				"dweb:/ipfs/QmcLFWUzkDPM37Sh9rt669JqkafGRjUD83eomYW7qpAz6T"
 			]
 		},
 		"PRACTICA FINAL/VotingContract.sol": {
-			"keccak256": "0x293f59243f4dac6c8d8a507ba9447dc8ce77fc382a7c059bc06891fe899190ae",
+			"keccak256": "0x3d8a4459c4ec79cf471b2f2f11d08ecde346e19b1f7066ec302db62e51e57b7f",
 			"license": "GPL-3.0",
 			"urls": [
-				"bzz-raw://7bef76639739e59a313aee13825ce2b14d32b15e3f82200da06589f17f65c490",
-				"dweb:/ipfs/QmPaM4HNBWq7gJZ5ApFL9MUiBAcDqjwT9zLC5xSAuacVUh"
+				"bzz-raw://9723100033908cdf38cf9a73a2ae1405b693ddccd4ef9f71b248922fdb98aabc",
+				"dweb:/ipfs/QmThYTT9YAthYXaDna2zHwCns1ft3VSqLBafhPtHW6tVjm"
 			]
 		},
 		"https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/interfaces/draft-IERC6093.sol": {

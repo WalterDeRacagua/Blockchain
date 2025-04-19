@@ -46,6 +46,25 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         bool _isCanceled; //Se ha cancelado la propuesta.
     }
 
+    /*Estructura auxiliar porque solidity no permite devolver mappings en funciones y Proposal tiene un map 
+    (Veremos si lo podemos solucionar para tener únicamente una estructura). Lo necesitamos para el getProposalInfo
+    */
+    struct ProposalInfo {
+        uint256 id;//Identificador único
+        string _title; //Título de la propuesta.
+        string _description;
+        uint256 _participants; //Número de participantes
+        uint256 _budget;//Presupuesto de la propuesta.
+        uint256 _votes; //Numero de votos totales en la propuesta
+        uint256 _umbral;
+        /*Address del contrato que debe implementar la interfaz IExecutableProposal.*/
+        address _contractProposal; //Será el receptor del dinero presupuestado en caso de ser aprobada la propuesta.
+        address _creator;
+        bool _isSignalign; //Si no es de signalign será financiera
+        bool _isApproved;//Se ha aprobado la propuesta
+        bool _isCanceled; //Se ha cancelado la propuesta.
+    }
+
     mapping (uint => Proposal) public proposals;//Id de la propuesta-> propuesta
     uint256[] public proposalsArray;//Array con los identificadores de las propuestas
 
@@ -203,7 +222,7 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         votingContract.mint(msg.sender, boughtTokens);
     }
 
-    function sellTokens (uint256 tokensToReturn) view public {
+    function sellTokens (uint256 tokensToReturn)  public {
         require(participants[msg.sender], "Para comprar tokens necesitas haberte inscrito como participante");
         require(tokensToReturn > 0, "No puedes vender una cantidad inferior a 1 token.");
         require(votingContract.balanceOf(msg.sender)>= tokensToReturn, "No puedes vender mas tokens de los que posees");
@@ -318,10 +337,26 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
     }
 
 
-    function getProposalInfo (uint idProposal) external view onlyAfterOpen returns (Proposal memory){
-
-
+    function getProposalInfo (uint256 idProposal) external view onlyAfterOpen returns (ProposalInfo memory){
+        require(idProposal < numProposals, "No existe esa propuesta");
         
+        //Propuesta que vamos a devolver.
+        ProposalInfo memory p_info;
+        
+        /*Asignamos todo menos las votaciones*/
+        p_info.id = idProposal;
+        p_info._budget= proposals[idProposal]._budget;
+        p_info._contractProposal=  proposals[idProposal]._contractProposal;
+        p_info._creator =  proposals[idProposal]._creator;
+        p_info._description =  proposals[idProposal]._description;
+        p_info._isApproved =  proposals[idProposal]._isApproved;
+        p_info._isCanceled =  proposals[idProposal]._isCanceled;
+        p_info._isSignalign =  proposals[idProposal]._isSignalign;
+        p_info._participants =  proposals[idProposal]._participants;
+        p_info._title =  proposals[idProposal]._title;
+        p_info._umbral =  proposals[idProposal]._umbral;
+        
+        return p_info;
     }
 
     /*NO DICE NADA PERO YO SUPONGO QUE HAY QUE LLAMAR SOLO SI LA VOTACIÓN ESTÁ ABIERTA.*/
