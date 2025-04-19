@@ -400,6 +400,12 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         bool success = IERC20(address(votingContract)).transferFrom(msg.sender, address(this), tokensNeeded);
         require(success, "La transferencia de Tokens ha fallado");
 
+
+        //Si se trata de un votante nuevo lo tenemos que meter en el array
+        if (currentVotes==0){
+            proposals[idProposal]._voters.push(msg.sender);
+        }
+
         //Actualizamos los votos y tokens si ha ido todo guay
         proposals[idProposal]._votes_participant[msg.sender]= totalVotes ; 
         proposals[idProposal]._votes+= voteAmount;
@@ -430,6 +436,31 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         //Actualizamos el número de votos y tokens
         proposals[idProposal]._votes_participant[msg.sender] = votesAfterWithdraw;
         proposals[idProposal]._votes -= voteAmount;
+        proposals[idProposal]._numTokens -= tokensToReturn;
+
+        //Ahora tenemos que actualizar el array por si el número de votos es 0.
+        //Seguro que hay una forma algo más eficiente de hacer esto... Preguntar
+        if (votesAfterWithdraw ==0) {
+            //recorremos los votos. En el peor de los casos es lineal 
+            for (uint256 i=0; i< proposals[idProposal]._voters.length; i++) 
+            {
+                if ( proposals[idProposal]._voters[i]==msg.sender) {
+                    //Lo que voy a hacer (no se si está bien) es cambiar de posición al último el que quiero eliminar para hacer el pop() correctamente
+                    proposals[idProposal]._voters[i] = proposals[idProposal]._voters[proposals[idProposal]._voters.length-1];
+                    proposals[idProposal]._voters.pop();
+
+                    /*
+                    Lo que he querido hacer es cambiar por el último el que quiero quitar, de forma que en la posición
+                    i actual tenemos el que antes era el último. En la última posición tenemos el mismo que en i ahora
+                    mismo (duplicado), por lo que eliminamos el último con pop().
+                    */
+
+                    //No se si esto te saca del bucle en Solidity, supongo que si.
+                    break ; 
+                }
+            }
+        }
+
 
     }
 
@@ -468,13 +499,21 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         
         uint256[] memory pendingProposals= getPendingProposals();
 
+        /*Coste cuadrático.*/
         for (uint256 i=0; i < pendingProposals.length; i++) 
         {
             uint256 id = pendingProposals[i];
             proposals[id]._isCanceled=true;
             numPendingProposals--;
 
-            //Tenemos que devolver tokens a los votantes   
+            //Tenemos que devolver tokens a los votantes 
+            for (uint256 j = 0; j < proposals[id]._voters.length; j++) {
+                
+                address voter = proposals[id]._voters[j];
+                uint256 numVotesVoter = proposals[id]._votes_participant[voter];
+                
+
+            }
         }
 
         isVotingOpen =false;
