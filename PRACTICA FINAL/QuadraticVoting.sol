@@ -44,6 +44,9 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         bool _isSignalign; //Si no es de signalign será financiera
         bool _isApproved;//Se ha aprobado la propuesta
         bool _isCanceled; //Se ha cancelado la propuesta.
+        /*Añado esta función para no tener que hacer un for en la función de checkAndExecuteProposal*/
+
+        uint256 _numTokens; //Número total de tokens que hay en la propuesta
     }
 
     /*Estructura auxiliar porque solidity no permite devolver mappings en funciones y Proposal tiene un map 
@@ -63,6 +66,8 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         bool _isSignalign; //Si no es de signalign será financiera
         bool _isApproved;//Se ha aprobado la propuesta
         bool _isCanceled; //Se ha cancelado la propuesta.
+
+        uint256 _numTokens; //Número total de tokens que hay en la propuesta
     }
 
     mapping (uint => Proposal) public proposals;//Id de la propuesta-> propuesta
@@ -415,7 +420,7 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
     }
 
 
-    function _checkAndExecuteProposal () internal {
+    function _checkAndExecuteProposal (uint256 idProposal) internal {
         //Si se puede ejecuta execute proposal del contrato.
 
     }
