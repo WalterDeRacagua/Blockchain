@@ -511,9 +511,24 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
                 
                 address voter = proposals[id]._voters[j];
                 uint256 numVotesVoter = proposals[id]._votes_participant[voter];
-                
+
+                if (numVotesVoter>0) {
+                    uint256 tokensToReturn = numVotesVoter * numVotesVoter;
+                    proposals[id]._votes_participant[voter] =0;
+
+                    if (tokensToReturn >0) {
+                        bool success = IERC20(address(votingContract)).transfer(voter, tokensToReturn);
+                        //Continuar incluso si falla para no bloquear.
+                    }
+                }
 
             }
+
+            //Ya no tiene votos la propuesta
+            proposals[id]._votes =0;
+            proposals[id]._numTokens =0;
+            proposals[id]._voters = new address[](0);
+
         }
 
         isVotingOpen =false;
