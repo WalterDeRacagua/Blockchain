@@ -361,21 +361,57 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
 
     /*NO DICE NADA PERO YO SUPONGO QUE HAY QUE LLAMAR SOLO SI LA VOTACIÓN ESTÁ ABIERTA.*/
     function stake (uint256 idProposal, uint256 voteAmount) external onlyAfterOpen {
-        
+        require(idProposal < numProposals, "No existe esa propuesta");
+        require(participants[msg.sender], "Para participar tienes que estar registrado como participante de la DAO!");
+        require(voteAmount >0, "No puedes depositar menos de 1 voto. Como vas a votar sin votar?");
+        require(!proposals[idProposal]._isCanceled, "No puedes votar sobre una propuesta que ya ha sido cancelada");
+        require(!proposals[idProposal]._isApproved, "La propuesta ya ha sido aprovada. Por tanto no puedes votar en ella");
+
+        /*
+        Una vez estas comprobaciones, vamos a ver cuántos votos ha hecho ya el participante para comprobar los tokens
+        que necesita para realizar la propuesta. 
+        */
+
+        uint256 currentVotes= proposals[idProposal]._votes_participant[msg.sender];
+        uint256 totalVotes= currentVotes + voteAmount;//Votos totales que tendra el participante.
+
+        //¿Cuántos tokens necesitará?
+        uint256 tokensNeeded = (totalVotes*totalVotes)-(currentVotes*currentVotes);
+
+        require(IERC20(address(votingContract)).allowance(msg.sender,address(this))>= tokensNeeded, "No tienes suficientes tokens para votar");
+
+        bool success = IERC20(address(votingContract)).transferFrom(msg.sender, address(this), tokensNeeded);
+        require(success, "La transferencia de Tokens ha fallado");
+
+        //Actualizamos los votos si ha ido todo guay
+        proposals[idProposal]._votes_participant[msg.sender]= totalVotes ; 
+        proposals[idProposal]._votes+= voteAmount;
+    }
     
-    }
+    function withdrawFromProposal (uint256 voteAmount, uint256 idProposal) external onlyAfterOpen {
+        require(idProposal < numProposals, "La propuesta que estas pasando no existe");
+        require(participants[msg.sender], "Debes darte de alta como participante para ejecutar esta funcion");
+        require(voteAmount >0, "Necesitas dejar un voto por lo menos."); 
+        require(!proposals[idProposal]._isCanceled, "La propuesta sobre la que quieres retirar votos ya ha sido cancelada");
+        require(!proposals[idProposal]._isApproved, "La propuesta ya ha sido aprobada");
+        require(proposals[idProposal]._votes_participant[msg.sender] >= voteAmount, "Estas intentando retirar mas votos de los que has realizado" );       
 
-    /* 
-    Calcula los tokens
-    necesarios para depositar los votos que se van a depositar y comprueba que el participante ha cedido
-    (con approve) el uso de esos tokens a la cuenta del contrato de la votacion.
-    */
-    function approve () external view {
+        //Calcular cuántos votos tenemos ahora, y con cuantos nos vamos a quedar tras retirar los votos.
+        uint256 currentVotes = proposals[idProposal]._votes_participant[msg.sender];
+        uint256 votesAfterWithdraw = currentVotes - voteAmount;
 
-    }
+        //Calcular tokens a devolver 
+        uint256 tokensToReturn = (currentVotes*currentVotes)- (votesAfterWithdraw*votesAfterWithdraw);
 
-    function withdrawFromProposal (uint voteAmount, uint idProposal) public {
-        //Retira si es posible esa cantidad de votos por el participante que invoca  esta función
+        require(IERC20(address(votingContract)).balanceOf(address(this))>= tokensToReturn, "No tenemos suficientes tokens para retirarlos");
+
+        //Lo tendremos que cambiar porque lo de Transfer limita el gas. 
+        bool success = IERC20(address(votingContract)).transfer(msg.sender,tokensToReturn);
+        require(success, "La transferencia de Tokens ha fallado"); 
+
+        //Actualizamos el número de votos
+        proposals[idProposal]._votes_participant[msg.sender] = votesAfterWithdraw;
+        proposals[idProposal]._votes -= voteAmount;
     }
 
 
