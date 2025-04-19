@@ -485,11 +485,11 @@
 	},
 	"sources": {
 		"PRACTICA FINAL/QuadraticVoting.sol": {
-			"keccak256": "0x1c5b61260f9eb2ef0d51a388ee22bb04439ba0efcddbf5216fe15df632113a54",
+			"keccak256": "0x5a7e4a6ab8d8d85248676ee9f64c4ad284f0543e0346b98cfe366e62bc5938d2",
 			"license": "GPL-3.0",
 			"urls": [
-				"bzz-raw://eca06cb9a0c49dee3d532cf32b4a347672f6d9a3084001467b0c87453d61f8f4",
-				"dweb:/ipfs/QmcLFWUzkDPM37Sh9rt669JqkafGRjUD83eomYW7qpAz6T"
+				"bzz-raw://f8209e4e9e2d3db054250322295dc860c0dd3d1ff3a56217f66c2d78e0ba21de",
+				"dweb:/ipfs/QmTjcSnVAUpDGXveCzsFVUPwUFUitdWW9FMDyY6uNRgvoT"
 			]
 		},
 		"PRACTICA FINAL/VotingContract.sol": {

@@ -360,7 +360,7 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
     }
 
     /*NO DICE NADA PERO YO SUPONGO QUE HAY QUE LLAMAR SOLO SI LA VOTACIÓN ESTÁ ABIERTA.*/
-    function stake (uint idProposal, uint voteAmount) external onlyAfterOpen {
+    function stake (uint256 idProposal, uint256 voteAmount) external onlyAfterOpen {
         
     
     }
