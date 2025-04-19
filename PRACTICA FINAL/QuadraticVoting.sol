@@ -216,6 +216,7 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         votingContract.burn(msg.sender, tokensToReturn); //Los borramos de la cuenta del contrato para no estar volviendo
 
         /*Le debemos de ingresar el Ether correspondiente a la cantidad de tokens que devuelve.*/
+        /*100% TENEMOS QUE CAMBIAR ESTE TRANSFER PORQUE LIMITA LA CANTIDAD DE GAS*/
         payable(msg.sender).transfer(refund); //Le devolvemos el valor de la devolución, de momento ese valor esta mal porque no lo calculamos correctamente
     }
 
@@ -256,14 +257,37 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
     }
 
     /*De tipo view porque simplemente devolvemos un array con los identificadores de propuestas APROBADAS*/
-    function getApprovedProposals() external view onlyAfterOpen returns (uint[] memory approvedIdentifiers){
+    function getApprovedProposals() external view onlyAfterOpen returns (uint[] memory ){
+        
+        uint256[] memory tempIDs = new uint256[](proposalsArray.length);//Queremos un array mínimamente del tamaño de las peticiones pendientes
+        uint256 numPending=0;
+        //Ese tamaño no es el tamaño real que queremos, tenemos que meter los elementos que queramos y después volver a meterlos en otro array que tenga el tamaño real
 
+        for (uint256 i=0; i< proposalsArray.length; i++) 
+        {
+            uint256 p_id= proposalsArray[i];//Sacamos el id
 
-    
+            //Tenemos que comprobar que sea de financiación y que además haya sido aprobada 
+            if (!proposals[p_id]._isSignalign && proposals[p_id]._isApproved) {
+                //Metemos el p_id en caso de que esto suceda porque significa que esta pending
+                tempIDs[numPending]= p_id;
+                numPending++;
+            }   
+        }
+
+        //Array del tamaño real
+        uint256[] memory approvedProposalsResult = new uint256[](numPending);
+
+        for (uint256 i=0; i<numPending; i++) 
+        {
+            approvedProposalsResult[i]=tempIDs[i];
+        }
+
+        return approvedProposalsResult;
     }
 
 
-    function getProposalInfo (uint idProposal) external view onlyAfterOpen returns (Proposal memory p){
+    function getProposalInfo (uint idProposal) external view onlyAfterOpen returns (Proposal memory){
 
 
         
