@@ -72,19 +72,20 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
     /*MODIFICADORES*/
 
     modifier onlyOwner() { 
-        require(msg.sender == _owner, "Not owner");
+        require(msg.sender == _owner, "Debes ser el owner del contrato para poder hacer esto.");
         _;
     }
 
+
     modifier onlyAfterOpen() {
-        require(isVotingOpen, "Voting is not opened");
+        require(isVotingOpen, "La votacion tiene que estar abierta");
         _;
     }
 
     function openVoting () external payable onlyOwner {
         
         //Vamos a comprobar que no esté abierta esta votación
-        require(!isVotingOpen, "La votacion ya esta abierta");
+        require(!isVotingOpen, "La votacion ya esta abierta, no puedes volver a abrirla");
 
         //Comprobamos que el presupuesto inicial (msg.value) sea mayor que 0.
         require(msg.value >0, "El presupuesto inicial debe ser mayor que cero");
@@ -284,6 +285,36 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         }
 
         return approvedProposalsResult;
+    }
+
+    function getSignalingProposals() external view onlyAfterOpen returns (uint[] memory ){
+        
+        uint256[] memory tempIDs = new uint256[](proposalsArray.length);//Queremos un array mínimamente del tamaño de las peticiones pendientes
+        uint256 numPending=0;
+        //Ese tamaño no es el tamaño real que queremos, tenemos que meter los elementos que queramos y después volver a meterlos en otro array que tenga el tamaño real
+
+        for (uint256 i=0; i< proposalsArray.length; i++) 
+        {
+            uint256 p_id= proposalsArray[i];//Sacamos el id
+
+            //Tenemos que comprobar que sea de signalign 
+            if (proposals[p_id]._isSignalign) {
+                //Metemos el p_id en caso de que esto suceda porque significa que esta pending
+                tempIDs[numPending]= p_id;
+                numPending++;
+            }   
+        }
+
+        //Array del tamaño real
+        uint256[] memory signalignProposalsResult = new uint256[](numPending);
+
+        for (uint256 i=0; i<numPending; i++) 
+        {
+            signalignProposalsResult[i]=tempIDs[i];
+        }
+
+        return signalignProposalsResult;
+
     }
 
 
