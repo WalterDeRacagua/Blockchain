@@ -47,7 +47,7 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
     }
 
     mapping (uint => Proposal) public proposals;//Id de la propuesta-> propuesta
-    uint256[] public proposalsArray; 
+    uint256[] public proposalsArray;//Array con los identificadores de las propuestas
 
     uint256 public numProposals; //Numero de propuestas
     uint256 public numPendingProposals; //Propuestas de financiación pendientes.
@@ -160,9 +160,9 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         newProposal._isApproved=false;
         newProposal._isCanceled=false;
 
-        if (!newProposal._isSignalign) {
-            proposalsArray.push(proposalId);    
-        }
+        //Tenemos que meter dentro del array todas las propuestas, luego en los getters comprobamos el resto de cosas.
+        proposalsArray.push(proposalId);    
+
         return proposalId;
     }
     
@@ -178,6 +178,8 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         if (!proposals[idProposal]._isSignalign){ 
             numPendingProposals--;
         }
+
+        /*NO TENEMOS QUE QUITAR DEL ARRAY PORQUE NO SE PUEDE HACER UN POP COMO EN JAVA */
 
         /*FALTA DEVOLVER LOS TOKENS COMPRADOS.*/
     }
@@ -224,9 +226,33 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
     }
 
     /*De tipo view porque simplemente devolvemos un array con los identificadores de propuestas DE FINANCIACIÓN PENDIENTES*/
-    function getPendingProposals() external view onlyAfterOpen returns (uint[] memory pendingIdentifiers){
+    function getPendingProposals() external view onlyAfterOpen returns (uint[] memory ){
 
-                
+        uint256[] memory tempIDs = new uint256[](proposalsArray.length);//Queremos un array mínimamente del tamaño de las peticiones pendientes
+        uint256 numPending=0;
+        //Ese tamaño no es el tamaño real que queremos, tenemos que meter los elementos que queramos y después volver a meterlos en otro array que tenga el tamaño real
+
+        for (uint256 i=0; i< proposalsArray.length; i++) 
+        {
+            uint256 p_id= proposalsArray[i];//Sacamos el id
+
+            //Tenemos que comprobar que sea de financiación y que además no haya sido aprobada NI cancelada
+            if (!proposals[p_id]._isSignalign && !proposals[p_id]._isApproved && !proposals[p_id]._isCanceled) {
+                //Metemos el p_id en caso de que esto suceda porque significa que esta pending
+                tempIDs[numPending]= p_id ;
+                numPending++;
+            }   
+        }
+
+        //Array del tamaño real
+        uint256[] memory pendingProposalsResult = new uint256[](numPending);
+
+        for (uint256 i=0; i<numPending; i++) 
+        {
+            pendingProposalsResult[i]=tempIDs[i];
+        }
+
+        return pendingProposalsResult;
     }
 
     /*De tipo view porque simplemente devolvemos un array con los identificadores de propuestas APROBADAS*/
