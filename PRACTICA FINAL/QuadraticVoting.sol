@@ -48,6 +48,10 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         /*Añado este atributo para no tener que hacer un for en la función de checkAndExecuteProposal*/
 
         uint256 _numTokens; //Número total de tokens que hay en la propuesta
+
+
+        /*Necesitamos añadir un array con los addresses de los votantes para recorrerlos en la función de closeVoting.*/
+        address[] _voters;
     }
 
     /*Estructura auxiliar porque solidity no permite devolver mappings en funciones y Proposal tiene un map 
@@ -94,7 +98,7 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         totalBudget=0;
     }
     
-    /*MODIFICADORES*/
+    /* MODIFICADORES */
 
     modifier onlyOwner() { 
         require(msg.sender == _owner, "Debes ser el owner del contrato para poder hacer esto.");
@@ -106,6 +110,12 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         require(isVotingOpen, "La votacion tiene que estar abierta");
         _;
     }
+
+    
+
+
+
+    /* FUNCIONES */
 
     function openVoting () external payable onlyOwner {
         
@@ -251,7 +261,7 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
     }
 
     /*De tipo view porque simplemente devolvemos un array con los identificadores de propuestas DE FINANCIACIÓN PENDIENTES*/
-    function getPendingProposals() external view onlyAfterOpen returns (uint[] memory ){
+    function getPendingProposals() internal view onlyAfterOpen returns (uint[] memory ){
 
         uint256[] memory tempIDs = new uint256[](proposalsArray.length);//Queremos un array mínimamente del tamaño de las peticiones pendientes
         uint256 numPending=0;
@@ -282,7 +292,7 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
     }
 
     /*De tipo view porque simplemente devolvemos un array con los identificadores de propuestas APROBADAS*/
-    function getApprovedProposals() external view onlyAfterOpen returns (uint[] memory ){
+    function getApprovedProposals() internal view onlyAfterOpen returns (uint[] memory ){
         
         uint256[] memory tempIDs = new uint256[](proposalsArray.length);//Queremos un array mínimamente del tamaño de las peticiones pendientes
         uint256 numPending=0;
@@ -312,7 +322,7 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         return approvedProposalsResult;
     }
 
-    function getSignalingProposals() external view onlyAfterOpen returns (uint[] memory ){
+    function getSignalingProposals() internal view onlyAfterOpen returns (uint[] memory ){
         
         uint256[] memory tempIDs = new uint256[](proposalsArray.length);//Queremos un array mínimamente del tamaño de las peticiones pendientes
         uint256 numPending=0;
@@ -446,14 +456,26 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         //Obviamente si tenemos que poner un límite concreto de gas IMPOSIBLE USAR TRANSFER.
         (bool success, )= proposals[idProposal]._contractProposal.call{value: proposals[idProposal]._budget, gas: 10000}
         (
-            /*Tengo que usar lo de selector para poder llamar a executeProposal con los parametros*/
+            /*Tengo que usar lo de selector para poder llamar a executeProposal*/
             abi.encodeWithSelector(IExecutableProposal.executeProposal.selector,idProposal, proposals[idProposal]._votes, proposals[idProposal]._numTokens)
         );
 
         require(success, "La ejecucion de la propuesta ha fallado");
     }
 
-    function closeVoting () external onlyOwner {
+    function closeVoting () external onlyOwner onlyAfterOpen{
+        
+        
+        uint256[] memory pendingProposals= getPendingProposals();
+
+        for (uint256 i=0; i < pendingProposals.length; i++) 
+        {
+            uint256 id = pendingProposals[i];
+            proposals[id]._isCanceled=true;
+            numPendingProposals--;
+
+            //Tenemos que devolver tokens a los votantes   
+        }
 
         isVotingOpen =false;
     }
