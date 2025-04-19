@@ -10,7 +10,7 @@ import "./VotingContract.sol";
 // import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 interface IExecutableProposal {
-    function executeProposal(uint proposalId, uint numVotes, uint numTokens) external payable;
+    function executeProposal(uint256 proposalId, uint256 numVotes, uint256 numTokens) external payable;
 }
 
 contract QuadraticVoting{ //Contrato para la votación cuadrática.
@@ -44,7 +44,8 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         bool _isSignalign; //Si no es de signalign será financiera
         bool _isApproved;//Se ha aprobado la propuesta
         bool _isCanceled; //Se ha cancelado la propuesta.
-        /*Añado esta función para no tener que hacer un for en la función de checkAndExecuteProposal*/
+
+        /*Añado este atributo para no tener que hacer un for en la función de checkAndExecuteProposal*/
 
         uint256 _numTokens; //Número total de tokens que hay en la propuesta
     }
@@ -181,7 +182,11 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
             newProposal._isSignalign= true ;
         }
 
+        //De momento no hay ni votos ni tokens.
         newProposal._votes=0;
+        newProposal._numTokens=0; 
+
+        //La propuesta no se ha cancelado ni aprobado
         newProposal._isApproved=false;
         newProposal._isCanceled=false;
 
@@ -209,21 +214,19 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         /*FALTA DEVOLVER LOS TOKENS COMPRADOS.*/
     }
 
-    /*Tendré que cambiar lo de view porque no es inmutable.*/
     function buyTokens() public payable {
         require(participants[msg.sender], "Para comprar tokens necesitas haberte inscrito como participante");
         require(msg.value >= votingContract.getTokenPrice(), "Debes enviar el Ether necesario para poder comprar al menos un token");
 
 
-        /*Revisar esto porque hay que tener en cuenta los que ha ha comprado.*/
         uint256 boughtTokens = msg.value/ votingContract.getTokenPrice();
         require(boughtTokens >= 1, "Necesitas comprar al menos un Token");
 
         
-    /*
-    PARA RECORDARLO YO: El término "mintear" proviene del inglés "mint", que significa "acuñar" o "crear"
-    en el contexto de monedas o activos
-    */
+        /*
+        PARA RECORDARLO YO: El término "mintear" proviene del inglés "mint", que significa "acuñar" o "crear"
+        en el contexto de monedas o activos
+        */
         votingContract.mint(msg.sender, boughtTokens);
     }
 
@@ -232,15 +235,11 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         require(tokensToReturn > 0, "No puedes vender una cantidad inferior a 1 token.");
         require(votingContract.balanceOf(msg.sender)>= tokensToReturn, "No puedes vender mas tokens de los que posees");
 
-        /*Aquí tendríamos que reducir la cantidad de tokens del msg.sender. Hay que revisar porque es cuadrático y eso aun 
-        no lo estamos barajando*/
-
         uint256 refund = tokensToReturn * votingContract.getTokenPrice();
         require(address(this).balance >= refund, "El contrato no tiene recursos para devolverte el Ether.");
 
         votingContract.burn(msg.sender, tokensToReturn); //Los borramos de la cuenta del contrato para no estar volviendo
 
-        /*Le debemos de ingresar el Ether correspondiente a la cantidad de tokens que devuelve.*/
         /*100% TENEMOS QUE CAMBIAR ESTE TRANSFER PORQUE LIMITA LA CANTIDAD DE GAS*/
         payable(msg.sender).transfer(refund); //Le devolvemos el valor de la devolución, de momento ese valor esta mal porque no lo calculamos correctamente
     }
@@ -258,6 +257,7 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         uint256 numPending=0;
         //Ese tamaño no es el tamaño real que queremos, tenemos que meter los elementos que queramos y después volver a meterlos en otro array que tenga el tamaño real
 
+        /*ESTOS FORS QUIZÁS PODEMOS REDUCIR LA CANTIDAD DE GAS CON YUL*/
         for (uint256 i=0; i< proposalsArray.length; i++) 
         {
             uint256 p_id= proposalsArray[i];//Sacamos el id
@@ -288,6 +288,7 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         uint256 numPending=0;
         //Ese tamaño no es el tamaño real que queremos, tenemos que meter los elementos que queramos y después volver a meterlos en otro array que tenga el tamaño real
 
+        /*ESTOS FORS QUIZÁS PODEMOS REDUCIR LA CANTIDAD DE GAS CON YUL*/
         for (uint256 i=0; i< proposalsArray.length; i++) 
         {
             uint256 p_id= proposalsArray[i];//Sacamos el id
@@ -317,6 +318,7 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         uint256 numPending=0;
         //Ese tamaño no es el tamaño real que queremos, tenemos que meter los elementos que queramos y después volver a meterlos en otro array que tenga el tamaño real
 
+        /*ESTOS FORS QUIZÁS PODEMOS REDUCIR LA CANTIDAD DE GAS CON YUL*/
         for (uint256 i=0; i< proposalsArray.length; i++) 
         {
             uint256 p_id= proposalsArray[i];//Sacamos el id
@@ -388,9 +390,10 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         bool success = IERC20(address(votingContract)).transferFrom(msg.sender, address(this), tokensNeeded);
         require(success, "La transferencia de Tokens ha fallado");
 
-        //Actualizamos los votos si ha ido todo guay
+        //Actualizamos los votos y tokens si ha ido todo guay
         proposals[idProposal]._votes_participant[msg.sender]= totalVotes ; 
         proposals[idProposal]._votes+= voteAmount;
+        proposals[idProposal]._numTokens += tokensNeeded;
     }
     
     function withdrawFromProposal (uint256 voteAmount, uint256 idProposal) external onlyAfterOpen {
@@ -414,15 +417,40 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         bool success = IERC20(address(votingContract)).transfer(msg.sender,tokensToReturn);
         require(success, "La transferencia de Tokens ha fallado"); 
 
-        //Actualizamos el número de votos
+        //Actualizamos el número de votos y tokens
         proposals[idProposal]._votes_participant[msg.sender] = votesAfterWithdraw;
         proposals[idProposal]._votes -= voteAmount;
+
     }
 
 
-    function _checkAndExecuteProposal (uint256 idProposal) internal {
-        //Si se puede ejecuta execute proposal del contrato.
+    function _checkAndExecuteProposal (uint256 idProposal) internal onlyAfterOpen {
+        require(idProposal < numProposals, "La propuesta que estas pasando no existe");
+        require(!proposals[idProposal]._isSignalign, "La propuesta debe ser de financiacion");
+        require(!proposals[idProposal]._isCanceled, "La propuesta que quieres ejecutar ya ha sido cancelada");  
+        require(!proposals[idProposal]._isApproved, "La propuesta sobre que quieres ejecutar ya ha sido aprobada"); 
+        require(proposals[idProposal]._contractProposal != address(0), "La propuesta no tiene contrato de votacion asociado");
+        require(totalBudget > proposals[idProposal]._budget, "El presupuesto total del contrato debe ser superior al demandado en la propuesta");
 
+        proposals[idProposal]._isApproved = true;
+        numPendingProposals--;
+
+        //Convertir tokens a weis para convertirlos en presupuesto
+        uint256 tokensValue = proposals[idProposal]._numTokens * votingContract.getTokenPrice();
+        totalBudget += tokensValue;
+
+        //Reducir el presupuesto con el presupuesto de la propuesta
+        totalBudget -= proposals[idProposal]._budget;
+
+        //Ejecutar la propuesta, tenemos que tener en cuenta el límite de gas. Tengo dudas de si se hace aquí o en un require.
+        //Obviamente si tenemos que poner un límite concreto de gas IMPOSIBLE USAR TRANSFER.
+        (bool success, )= proposals[idProposal]._contractProposal.call{value: proposals[idProposal]._budget, gas: 10000}
+        (
+            /*Tengo que usar lo de selector para poder llamar a executeProposal con los parametros*/
+            abi.encodeWithSelector(IExecutableProposal.executeProposal.selector,idProposal, proposals[idProposal]._votes, proposals[idProposal]._numTokens)
+        );
+
+        require(success, "La ejecucion de la propuesta ha fallado");
     }
 
     function closeVoting () external onlyOwner {
