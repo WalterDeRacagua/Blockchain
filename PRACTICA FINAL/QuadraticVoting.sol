@@ -66,7 +66,7 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         uint256 _votes; //Numero de votos totales en la propuesta
         uint256 _umbral;
         /*Address del contrato que debe implementar la interfaz IExecutableProposal.*/
-        address _contractProposal; //Será el receptor del dinero presupuestado en caso de ser aprobada la propuesta.
+        address  _contractProposal; //Será el receptor del dinero presupuestado en caso de ser aprobada la propuesta.
         address _creator;
         bool _isSignalign; //Si no es de signalign será financiera
         bool _isApproved;//Se ha aprobado la propuesta
@@ -91,6 +91,7 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         _owner = msg.sender; 
 
         isVotingOpen = false;
+
         /*Podemos sacar despues el precio y el max de los getter.*/
         votingContract = new VotingContract("DAO Vote Token", "DVT", _tokenPrice, _maxTokens);
         numProposals=0;
@@ -110,6 +111,8 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         require(isVotingOpen, "La votacion tiene que estar abierta");
         _;
     }
+
+    /*Añadir un modificador que compruebe todo lo que se comprueban en las últimas funciones.*/
 
     
 
@@ -164,7 +167,6 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
 
     function addProposal (string calldata title, string calldata description, uint256  budget, address proposalContract) public onlyAfterOpen  returns (uint256) {
 
-        require(isVotingOpen, "La votacion debe estar abierta");
         require(participants[msg.sender], "Debes inscribirte como participante para poder crear una propuesta");
         require(proposalContract != address(0) , "La direccion del contrato no es valida");
         require(bytes(title).length >0 , "El titulo de la propuesta no puede ser vacio");
@@ -531,7 +533,59 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
 
         }
 
-        isVotingOpen =false;
+        uint256[] memory signalignProposalsResult= getSignalingProposals();
+          // Procesar propuestas de signaling (ejecutar y devolver tokens)
+        for (uint256 i = 0; i < signalignProposalsResult.length; i++) {
+            uint256 proposalId = signalignProposalsResult[i];
+            Proposal storage proposal = proposals[proposalId];
+
+            if (!proposal._isCanceled && !proposal._isApproved) {
+                // Ejecutar propuesta de signaling
+                if (proposal._contractProposal != address(0)) {
+                    (bool success, ) = proposal._contractProposal.call{value: 0}
+                    (
+                        abi.encodeWithSelector(
+                            IExecutableProposal.executeProposal.selector,
+                            proposalId,
+                            proposal._votes,
+                            proposal._numTokens
+                        )
+                    );
+                    // Continuar incluso si falla
+                }
+
+                // Devolver tokens a los votantes
+                for (uint256 j = 0; j < proposal._voters.length; j++) {
+                    address voter = proposal._voters[j];
+                    uint256 votes = proposal._votes_participant[voter];
+                    if (votes > 0) {
+                        uint256 tokensToReturn = votes * votes;
+                        proposal._votes_participant[voter] = 0;
+                        if (tokensToReturn > 0) {
+                            //Esto tendremos que cambiarlo
+                            bool success = IERC20(address(votingContract)).transfer(voter, tokensToReturn);
+                        }
+                    }
+                }
+                proposal._votes = 0;
+                proposal._numTokens = 0;
+                proposal._voters = new address[](0);
+            }
+        }
+
+        // Transferir presupuesto no gastado al propietario
+        if (totalBudget > 0) {
+            uint256 budgetToTransfer = totalBudget;
+            totalBudget = 0;
+            payable(_owner).transfer(budgetToTransfer);
+        }
+
+        // Reiniciar estado para nuevo proceso de votación
+        isVotingOpen = false;
+        proposalsArray = new uint256[](0);
+        numProposals = 0;
+        numPendingProposals = 0;
+
     }
     
 }
