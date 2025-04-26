@@ -106,9 +106,9 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
 
 
     /* FUNCIONES */
-
-    function openVoting () external payable onlyOwner {
-        
+    
+    /*DONE*/
+    function openVoting () external payable onlyOwner {     
         require(!isVotingOpen, "La votacion ya esta abierta, no puedes volver a abrirla");
         require(msg.value >0, "El presupuesto inicial debe ser mayor que cero");
 
@@ -119,13 +119,11 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         isVotingOpen=true;
     }
 
+    /*DONE*/
     function addParticipant () external payable{
-        
         //Cuando se inscribe el participante debe transferir Ether para comprar Tokens (al menos uno).
-        require(msg.value >= votingContract.getTokenPrice(), "No estas aportando suficiente Ether como para comprar tokens");
-        
-        //Comprobamos que no esté registrado ya el participante.
-        require(!participants[msg.sender], "Participante ya esta registrado.");
+        require(msg.value >= votingContract.getTokenPrice(), "No estas aportando suficiente Ether como para comprar tokens. Necesitas poder comprar 1 al menos.");
+        require(!participants[msg.sender], "Participante ya esta registrado. No puedes registrarte otra vez");
 
         //Calculamos cuántos tokens podemos emitir con value aportado por el participante
         uint256 numTokens= msg.value/votingContract.getTokenPrice();
@@ -135,31 +133,30 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         participants[msg.sender]=true;
         numParticipants++;        
 
-        //Emitimos los tokens
+        //Minteamos los tokens
         votingContract.mint(msg.sender, numTokens);
     }
 
+    /*DONE*/
     function removeParticipant() public {
-
-        //Eliminamos al participante.
-        require(participants[msg.sender], "Particiapante no registrado");
+        require(participants[msg.sender], "Particiapante no registrado. No puedes eliminar un participante que no esta registrado");
 
         //Eliminar participante
-        participants[msg.sender]=false;
+        participants[msg.sender]=false; //Desmarcamos del mapping a este participante.
         numParticipants--;        
     }
 
-    function addProposal (string calldata title, string calldata description, uint256  budget, address proposalContract) public onlyAfterOpen  returns (uint256) {
-
+    function addProposal (string calldata title, string calldata description, uint256 budget, address proposalContract) external onlyAfterOpen  returns (uint256) {
         require(participants[msg.sender], "Debes inscribirte como participante para poder crear una propuesta");
         require(proposalContract != address(0) , "La direccion del contrato no es valida");
         require(bytes(title).length >0 , "El titulo de la propuesta no puede ser vacio");
         require(bytes(description).length>0, "La descripcion de la propuesta no puede ser vacia");
 
-        //Aumentamos el numero de propuestas
+        //Aumentamos el numero de propuestas y cogemos el índice actual para asignarselo a la nueva que queremos añadir.
         uint256 proposalId =numProposals;
         numProposals++;
 
+        //Creamos el objeto propuesta asignando sus atributos correspondientes.
         Proposal storage newProposal=proposals[proposalId];
         newProposal.id = proposalId;
         newProposal._title = title;
@@ -181,7 +178,7 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
             newProposal._isSignaling= true ;
         }
 
-        //De momento no hay ni votos ni tokens.
+        //De momento no hay ni votos ni tokens para la nueva propuesta.
         newProposal._votes=0;
         newProposal._numTokens=0; 
 
