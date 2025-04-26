@@ -30,8 +30,8 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
 
 
     /*PARTICIPANTES*/
-    uint256 public numParticipants;
-    mapping (address=>bool) public participants;//Para ver si están registrados
+    uint256  numParticipants;
+    mapping (address=>bool)  participants;//Para ver si están registrados
 
     struct Proposal {
         uint256 id;//Identificador único
@@ -46,7 +46,7 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         address _contractProposal; //Será el receptor del dinero presupuestado en caso de ser aprobada la propuesta.
         address _creator; //Creador de la propuesta
         
-        bool _isSignalign; //Si no es de signalign será financiera
+        bool _isSignaling; //Si no es de signalign será financiera
         bool _isApproved;//Se ha aprobado la propuesta
         bool _isCanceled; //Se ha cancelado la propuesta.
 
@@ -81,6 +81,7 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
 
         /*Podemos sacar despues el precio y el max de los getter.*/
         votingContract = new VotingContract("DAO Vote Token", "DVT", _tokenPrice, _maxTokens);
+
         numProposals=0;
         numPendingProposals=0;
         totalBudget=0;
@@ -101,7 +102,6 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
 
     /*Añadir un modificador que compruebe todo lo que se comprueban en las últimas funciones.*/
 
-    
 
 
 
@@ -109,13 +109,10 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
 
     function openVoting () external payable onlyOwner {
         
-        //Vamos a comprobar que no esté abierta esta votación
         require(!isVotingOpen, "La votacion ya esta abierta, no puedes volver a abrirla");
-
-        //Comprobamos que el presupuesto inicial (msg.value) sea mayor que 0.
         require(msg.value >0, "El presupuesto inicial debe ser mayor que cero");
 
-        //Presupuesto total
+        //Presupuesto total inicial que servirá para aprobar las apuestas.
         totalBudget = msg.value;
         
         //Marcamos las votaciones como abiertas.
@@ -173,7 +170,7 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         newProposal._creator=msg.sender;
 
         if (budget > 0)  {
-            newProposal._isSignalign= false;
+            newProposal._isSignaling= false;
 
             /*Aumentamos el número de propuestas pendientes*/
             numPendingProposals++;
@@ -181,7 +178,7 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         else {
 
             //Las propuestas de signailig no tienen presupuesto
-            newProposal._isSignalign= true ;
+            newProposal._isSignaling= true ;
         }
 
         //De momento no hay ni votos ni tokens.
@@ -199,7 +196,7 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
     }
     
     function cancelProposal (uint idProposal) public onlyAfterOpen {
-        require(idProposal > numProposals, "No existe esa propuesta");
+        require(idProposal < numProposals, "No existe esa propuesta");
         require(msg.sender == proposals[idProposal]._creator, "No puedes cancelar la propuesta si no eres el creador de la misma");
         require(!proposals[idProposal]._isApproved, "No se pueden aprobar propuestas ya aprobadas.");
         require(!proposals[idProposal]._isCanceled, "No se puede cancelar si la propuesta ya ha sido cancelada anteriormente");
@@ -207,7 +204,7 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         proposals[idProposal]._isCanceled=true;//Cancelamos la propuesta
 
         //Si es de financiación...
-        if (!proposals[idProposal]._isSignalign){ 
+        if (!proposals[idProposal]._isSignaling){ 
             numPendingProposals--;
         }
 
@@ -265,7 +262,7 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
             uint256 p_id= proposalsArray[i];//Sacamos el id
 
             //Tenemos que comprobar que sea de financiación y que además no haya sido aprobada NI cancelada
-            if (!proposals[p_id]._isSignalign && !proposals[p_id]._isApproved && !proposals[p_id]._isCanceled) {
+            if (!proposals[p_id]._isSignaling && !proposals[p_id]._isApproved && !proposals[p_id]._isCanceled) {
                 //Metemos el p_id en caso de que esto suceda porque significa que esta pending
                 tempIDs[numPending]= p_id ;
                 numPending++;
@@ -296,7 +293,7 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
             uint256 p_id= proposalsArray[i];//Sacamos el id
 
             //Tenemos que comprobar que sea de financiación y que además haya sido aprobada 
-            if (!proposals[p_id]._isSignalign && proposals[p_id]._isApproved) {
+            if (!proposals[p_id]._isSignaling && proposals[p_id]._isApproved) {
                 //Metemos el p_id en caso de que esto suceda porque significa que esta pending
                 tempIDs[numPending]= p_id;
                 numPending++;
@@ -326,7 +323,7 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
             uint256 p_id= proposalsArray[i];//Sacamos el id
 
             //Tenemos que comprobar que sea de signalign 
-            if (proposals[p_id]._isSignalign) {
+            if (proposals[p_id]._isSignaling) {
                 //Metemos el p_id en caso de que esto suceda porque significa que esta pending
                 tempIDs[numPending]= p_id;
                 numPending++;
@@ -360,7 +357,7 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         p_info._description =  proposals[idProposal]._description;
         p_info._isApproved =  proposals[idProposal]._isApproved;
         p_info._isCanceled =  proposals[idProposal]._isCanceled;
-        p_info._isSignalign =  proposals[idProposal]._isSignalign;
+        p_info._isSignaling =  proposals[idProposal]._isSignaling;
         p_info._participants =  proposals[idProposal]._participants;
         p_info._title =  proposals[idProposal]._title;
         p_info._umbral =  proposals[idProposal]._umbral;
@@ -459,7 +456,7 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
 
     function _checkAndExecuteProposal (uint256 idProposal) internal onlyAfterOpen {
         require(idProposal < numProposals, "La propuesta que estas pasando no existe");
-        require(!proposals[idProposal]._isSignalign, "La propuesta debe ser de financiacion");
+        require(!proposals[idProposal]._isSignaling, "La propuesta debe ser de financiacion");
         require(!proposals[idProposal]._isCanceled, "La propuesta que quieres ejecutar ya ha sido cancelada");  
         require(!proposals[idProposal]._isApproved, "La propuesta sobre que quieres ejecutar ya ha sido aprobada"); 
         require(proposals[idProposal]._contractProposal != address(0), "La propuesta no tiene contrato de votacion asociado");
@@ -549,10 +546,10 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
                 // Devolver tokens a los votantes
                 for (uint256 j = 0; j < proposal._voters.length; j++) {
                     address voter = proposal._voters[j];
-                    uint256 votes =  proposal_votes_participant[j][voter];
+                    uint256 votes =  proposal_votes_participant[proposalId][voter];
                     if (votes > 0) {
                         uint256 tokensToReturn = votes * votes;
-                        proposal_votes_participant[j][voter]= 0;
+                        proposal_votes_participant[proposalId][voter]= 0;
                         if (tokensToReturn > 0) {
                             //Esto tendremos que cambiarlo
                             IERC20(address(votingContract)).transfer(voter, tokensToReturn);
