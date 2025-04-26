@@ -146,6 +146,7 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         numParticipants--;        
     }
 
+    /*DONE*/
     function addProposal (string calldata title, string calldata description, uint256 budget, address proposalContract) external onlyAfterOpen  returns (uint256) {
         require(participants[msg.sender], "Debes inscribirte como participante para poder crear una propuesta");
         require(proposalContract != address(0) , "La direccion del contrato no es valida");
@@ -169,7 +170,7 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         if (budget > 0)  {
             newProposal._isSignaling= false;
 
-            /*Aumentamos el número de propuestas pendientes*/
+            /*Aumentamos el número de propuestas pendientes. Las propuestas pendientes solo pueden ser de financiacion*/
             numPendingProposals++;
         }
         else {
@@ -192,13 +193,15 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         return proposalId;
     }
     
+    //TODO, falta devolver tokens
     function cancelProposal (uint idProposal) public onlyAfterOpen {
         require(idProposal < numProposals, "No existe esa propuesta");
         require(msg.sender == proposals[idProposal]._creator, "No puedes cancelar la propuesta si no eres el creador de la misma");
-        require(!proposals[idProposal]._isApproved, "No se pueden aprobar propuestas ya aprobadas.");
+        require(!proposals[idProposal]._isApproved, "No se pueden cancelar propuestas ya aprobadas.");
         require(!proposals[idProposal]._isCanceled, "No se puede cancelar si la propuesta ya ha sido cancelada anteriormente");
 
-        proposals[idProposal]._isCanceled=true;//Cancelamos la propuesta
+        //Cancelamos la propuesta
+        proposals[idProposal]._isCanceled=true;
 
         //Si es de financiación...
         if (!proposals[idProposal]._isSignaling){ 
@@ -210,12 +213,15 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         /*FALTA DEVOLVER LOS TOKENS COMPRADOS.*/
     }
 
-    function buyTokens() public payable {
+    /*DONE*/
+    function buyTokens() external payable {
         require(participants[msg.sender], "Para comprar tokens necesitas haberte inscrito como participante");
-        require(msg.value >= votingContract.getTokenPrice(), "Debes enviar el Ether necesario para poder comprar al menos un token");
+        require(msg.value >= votingContract.getTokenPrice(), "Debes enviar el Ether necesario para poder comprar al menos un token.");
 
-
+        //Comprobamos cuántos tokens podría comprar con el value aportado 
         uint256 boughtTokens = msg.value/ votingContract.getTokenPrice();
+
+        //No se si esta comprobación es necesaria.
         require(boughtTokens >= 1, "Necesitas comprar al menos un Token");
 
         
@@ -226,8 +232,9 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         votingContract.mint(msg.sender, boughtTokens);
     }
 
-    function sellTokens (uint256 tokensToReturn)  public {
-        require(participants[msg.sender], "Para comprar tokens necesitas haberte inscrito como participante");
+    /*DONE*/
+    function sellTokens (uint256 tokensToReturn)  external  {
+        require(participants[msg.sender], "Para vender tokens necesitas haberte inscrito como participante");
         require(tokensToReturn > 0, "No puedes vender una cantidad inferior a 1 token.");
         require(votingContract.balanceOf(msg.sender)>= tokensToReturn, "No puedes vender mas tokens de los que posees");
 
@@ -236,17 +243,17 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
 
         votingContract.burn(msg.sender, tokensToReturn); //Los borramos de la cuenta del contrato para no estar volviendo
 
-        /*100% TENEMOS QUE CAMBIAR ESTE TRANSFER PORQUE LIMITA LA CANTIDAD DE GAS*/
-        payable(msg.sender).transfer(refund); //Le devolvemos el valor de la devolución, de momento ese valor esta mal porque no lo calculamos correctamente
+        (bool success, )= msg.sender.call{value: refund}("");
+        require(success, "La transferencia de Ether al participante ha fallado.");
     }
 
+    /*DONE*/
     function getERC20() external view returns (address) {
 
-        //Getter de toda la vida que devuelve el address del contrato ERC20. No creo que tenga mayor misterio que esto.
         return address(votingContract);
     }
 
-    /*De tipo view porque simplemente devolvemos un array con los identificadores de propuestas DE FINANCIACIÓN PENDIENTES*/
+    /*DONE*/
     function getPendingProposals() internal view onlyAfterOpen returns (uint[] memory ){
 
         uint256[] memory tempIDs = new uint256[](proposalsArray.length);//Queremos un array mínimamente del tamaño de las peticiones pendientes
@@ -277,7 +284,7 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         return pendingProposalsResult;
     }
 
-    /*De tipo view porque simplemente devolvemos un array con los identificadores de propuestas APROBADAS*/
+    /*DONE*/
     function getApprovedProposals() internal view onlyAfterOpen returns (uint[] memory ){
         
         uint256[] memory tempIDs = new uint256[](proposalsArray.length);//Queremos un array mínimamente del tamaño de las peticiones pendientes
@@ -308,6 +315,7 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         return approvedProposalsResult;
     }
 
+    /*DONE*/
     function getSignalingProposals() internal view onlyAfterOpen returns (uint[] memory){
         
         uint256[] memory tempIDs = new uint256[](proposalsArray.length);//Queremos un array mínimamente del tamaño de las peticiones pendientes
@@ -339,7 +347,7 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
 
     }
 
-
+    /*DONE*/
     function getProposalInfo (uint256 idProposal) external view onlyAfterOpen returns (Proposal memory){
         require(idProposal < numProposals, "No existe esa propuesta");
         
