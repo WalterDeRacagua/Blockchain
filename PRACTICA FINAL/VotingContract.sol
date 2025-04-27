@@ -51,6 +51,4 @@ contract VotingContract is ERC20{
 
     function getTokenPrice() external view returns (uint256) { return tokenPrice;}
     function getMaxTokens() external view returns (uint256){return maxTokens; }
-
-
 }

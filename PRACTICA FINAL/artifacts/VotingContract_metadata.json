@@ -1,6 +1,6 @@
 {
 	"compiler": {
-		"version": "0.8.26+commit.8a97fa7a"
+		"version": "0.8.29+commit.ab55807c"
 	},
 	"language": "Solidity",
 	"output": {
@@ -572,11 +572,11 @@
 	},
 	"sources": {
 		"PRACTICA FINAL/VotingContract.sol": {
-			"keccak256": "0x3d8a4459c4ec79cf471b2f2f11d08ecde346e19b1f7066ec302db62e51e57b7f",
+			"keccak256": "0xcc0a74b190cde1394d5b9cb9857f5c32bf9055ba3244d9102eb6eeb86181c192",
 			"license": "GPL-3.0",
 			"urls": [
-				"bzz-raw://9723100033908cdf38cf9a73a2ae1405b693ddccd4ef9f71b248922fdb98aabc",
-				"dweb:/ipfs/QmThYTT9YAthYXaDna2zHwCns1ft3VSqLBafhPtHW6tVjm"
+				"bzz-raw://4e722090e0f8413a9729f72923e30a4c2a81effedb06018da6e702ca26718f97",
+				"dweb:/ipfs/QmRt6PvPe53CbJyYa1gZXSTrRdhFsMdrt2TXK4WSQ7euj7"
 			]
 		},
 		"https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/interfaces/draft-IERC6093.sol": {
