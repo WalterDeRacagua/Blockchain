@@ -30,19 +30,15 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         uint256 _votes; //Numero de votos totales en la propuesta
         uint256 _umbral;
         
-        /*Address del contrato que debe implementar la interfaz IExecutableProposal.*/
         address _contractProposal; //Será el receptor del dinero presupuestado en caso de ser aprobada la propuesta.
         address _creator; //Creador de la propuesta
-        
         bool _isSignaling; //Si no es de signalign será financiera
         bool _isApproved;//Se ha aprobado la propuesta
         bool _isCanceled; //Se ha cancelado la propuesta.
 
         /*Añado este atributo para no tener que hacer un for en la función de checkAndExecuteProposal*/
         uint256 _numTokens; //Número total de tokens que hay en la propuesta
-
-        /*Necesitamos añadir un array con los addresses de los votantes para recorrerlos en la función de closeVoting.*/
-        address[] _voters;
+        address[] _voters;//Necesitamos añadir un array con los addresses de los votantes para recorrerlos en la función de closeVoting
     }
 
     mapping (uint => Proposal) public proposals;//Id de la propuesta-> propuesta
@@ -83,7 +79,20 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         require(!proposals[idProposal]._isApproved, "La propuesta ya ha sido aprobada y no puedes ejecutar la funcion.");_; 
     }
 
-    /* FUNCIONES */
+    /*MIS FUNCIONES AUXILIARES*/
+
+    function getResultArray(uint256 numPending, uint256[] memory tempIDs) view internal returns(uint256[] memory) {
+        uint256[] memory arrayResult = new uint256[](numPending);
+
+        for (uint256 i=0; i<numPending; i++) 
+        {
+            arrayResult[i]=tempIDs[i];
+        }
+
+        return arrayResult;
+    }
+
+    /* FUNCIONES QUE SE PIDEN EN EL ENUNCIADO*/
     
     /*DONE*/
     function openVoting () external payable onlyOwner {     
@@ -241,16 +250,8 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
                 numPending++;
             }   
         }
-
-        //Array del tamaño real
-        uint256[] memory pendingProposalsResult = new uint256[](numPending);
-
-        for (uint256 i=0; i<numPending; i++) 
-        {
-            pendingProposalsResult[i]=tempIDs[i];
-        }
-
-        return pendingProposalsResult;
+        
+        return getResultArray(numPending, tempIDs);
     }
 
     /*DONE*/
@@ -273,15 +274,7 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
             }   
         }
 
-        //Array del tamaño real
-        uint256[] memory approvedProposalsResult = new uint256[](numPending);
-
-        for (uint256 i=0; i<numPending; i++) 
-        {
-            approvedProposalsResult[i]=tempIDs[i];
-        }
-
-        return approvedProposalsResult;
+        return  getResultArray(numPending, tempIDs);
     }
 
     /*DONE*/
@@ -304,25 +297,13 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
             }   
         }
 
-        //Array del tamaño real
-        uint256[] memory signalignProposalsResult = new uint256[](numPending);
-
-        for (uint256 i=0; i<numPending; i++) 
-        {
-            signalignProposalsResult[i]=tempIDs[i];
-        }
-
-        return signalignProposalsResult;
-
+        return getResultArray(numPending, tempIDs);
     }
 
     /*DONE*/
     function getProposalInfo (uint256 idProposal) external view onlyAfterOpen onlyProposalExist(idProposal) returns (Proposal memory){
-        
-        //Propuesta que vamos a devolver.
         Proposal memory p_info;
-        
-        /*Asignamos todo menos las votaciones*/
+    
         p_info.id = idProposal;
         p_info._budget= proposals[idProposal]._budget;
         p_info._contractProposal=  proposals[idProposal]._contractProposal;
@@ -347,7 +328,6 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         Una vez estas comprobaciones, vamos a ver cuántos votos ha hecho ya el participante para comprobar los tokens
         que necesita para realizar la propuesta. 
         */
-
         uint256 currentVotes= proposal_votes_participant[idProposal][msg.sender];
         uint256 totalVotes= currentVotes + voteAmount;//Votos totales que tendra el participante.
 
@@ -358,7 +338,6 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
 
         bool success = IERC20(address(votingContract)).transferFrom(msg.sender, address(this), tokensNeeded);
         require(success, "La transferencia de Tokens ha fallado");
-
 
         //Si se trata de un votante nuevo lo tenemos que meter en el array
         if (currentVotes==0){
@@ -392,7 +371,6 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         proposals[idProposal]._numTokens -= tokensToReturn;
 
         //Ahora tenemos que actualizar el array por si el número de votos es 0.
-        //Seguro que hay una forma algo más eficiente de hacer esto... Preguntar
         if (votesAfterWithdraw ==0) {
             //recorremos los votos. En el peor de los casos es lineal 
             for (uint256 i=0; i< proposals[idProposal]._voters.length; i++) 
@@ -405,16 +383,12 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
                     /*
                     Lo que he querido hacer es cambiar por el último el que quiero quitar, de forma que en la posición
                     i actual tenemos el que antes era el último. En la última posición tenemos el mismo que en i ahora
-                    mismo (duplicado), por lo que eliminamos el último con pop().
+                    mismo (duplicado), por lo que eliminamos el último con pop(). De esta forma nos cargamos al que no queremos.
                     */
-
-                    //No se si esto te saca del bucle en Solidity, supongo que si.
                     break ; 
                 }
             }
         }
-
-
     }
 
     function _checkAndExecuteProposal (uint256 idProposal) internal onlyAfterOpen onlyProposalExist(idProposal) onlyNotCanceled(idProposal)
