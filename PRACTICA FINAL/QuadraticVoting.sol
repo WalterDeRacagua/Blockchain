@@ -84,19 +84,6 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         require(!proposals[idProposal]._isApproved, "La propuesta ya ha sido aprobada y no puedes ejecutar la funcion.");_; 
     }
 
-    /*MIS FUNCIONES AUXILIARES*/
-
-    function getResultArray(uint256 numPending, uint256[] memory tempIDs) view internal returns(uint256[] memory) {
-        uint256[] memory arrayResult = new uint256[](numPending);
-
-        for (uint256 i=0; i<numPending; i++) 
-        {
-            arrayResult[i]=tempIDs[i];
-        }
-
-        return arrayResult;
-    }
-
     /* FUNCIONES QUE SE PIDEN EN EL ENUNCIADO*/
     
     /*DONE*/
