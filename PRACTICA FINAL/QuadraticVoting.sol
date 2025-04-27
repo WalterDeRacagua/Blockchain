@@ -571,7 +571,8 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         if (totalBudget > 0) {
             uint256 budgetToTransfer = totalBudget;
             totalBudget = 0;
-            payable(_owner).transfer(budgetToTransfer);
+            (bool success, ) =_owner.call{value: budgetToTransfer}("");
+            require(success, "La transferencia del presupuesto ha fallado.");
         }
 
         // Reiniciar estado para nuevo proceso de votación
