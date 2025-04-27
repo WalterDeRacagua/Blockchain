@@ -100,6 +100,11 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         _;
     }
 
+    modifier onlyProposalExist(uint256 idProposal){
+        require(idProposal < numProposals, "La propuesta que estas pasando no existe");
+        _;
+    }
+
     /*Añadir un modificador que compruebe todo lo que se comprueban en las últimas funciones.*/
 
 
@@ -194,8 +199,7 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
     }
     
     //TODO, falta devolver tokens
-    function cancelProposal (uint idProposal) public onlyAfterOpen {
-        require(idProposal < numProposals, "No existe esa propuesta");
+    function cancelProposal (uint idProposal) public onlyAfterOpen onlyProposalExist(idProposal){
         require(msg.sender == proposals[idProposal]._creator, "No puedes cancelar la propuesta si no eres el creador de la misma");
         require(!proposals[idProposal]._isApproved, "No se pueden cancelar propuestas ya aprobadas.");
         require(!proposals[idProposal]._isCanceled, "No se puede cancelar si la propuesta ya ha sido cancelada anteriormente");
@@ -348,8 +352,7 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
     }
 
     /*DONE*/
-    function getProposalInfo (uint256 idProposal) external view onlyAfterOpen returns (Proposal memory){
-        require(idProposal < numProposals, "No existe esa propuesta");
+    function getProposalInfo (uint256 idProposal) external view onlyAfterOpen onlyProposalExist(idProposal) returns (Proposal memory){
         
         //Propuesta que vamos a devolver.
         Proposal memory p_info;
@@ -371,8 +374,7 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
     }
 
     /*NO DICE NADA PERO YO SUPONGO QUE HAY QUE LLAMAR SOLO SI LA VOTACIÓN ESTÁ ABIERTA.*/
-    function stake (uint256 idProposal, uint256 voteAmount) external onlyAfterOpen {
-        require(idProposal < numProposals, "No existe esa propuesta");
+    function stake (uint256 idProposal, uint256 voteAmount) external onlyAfterOpen onlyProposalExist(idProposal){
         require(participants[msg.sender], "Para participar tienes que estar registrado como participante de la DAO!");
         require(voteAmount >0, "No puedes depositar menos de 1 voto. Como vas a votar sin votar?");
         require(!proposals[idProposal]._isCanceled, "No puedes votar sobre una propuesta que ya ha sido cancelada");
@@ -406,8 +408,7 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         proposals[idProposal]._numTokens += tokensNeeded;
     }
     
-    function withdrawFromProposal (uint256 voteAmount, uint256 idProposal) external onlyAfterOpen {
-        require(idProposal < numProposals, "La propuesta que estas pasando no existe");
+    function withdrawFromProposal (uint256 voteAmount, uint256 idProposal) external onlyAfterOpen onlyProposalExist(idProposal) {
         require(participants[msg.sender], "Debes darte de alta como participante para ejecutar esta funcion");
         require(voteAmount >0, "Necesitas dejar un voto por lo menos."); 
         require(!proposals[idProposal]._isCanceled, "La propuesta sobre la que quieres retirar votos ya ha sido cancelada");
@@ -459,8 +460,7 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
     }
 
 
-    function _checkAndExecuteProposal (uint256 idProposal) internal onlyAfterOpen {
-        require(idProposal < numProposals, "La propuesta que estas pasando no existe");
+    function _checkAndExecuteProposal (uint256 idProposal) internal onlyAfterOpen onlyProposalExist(idProposal){
         require(!proposals[idProposal]._isSignaling, "La propuesta debe ser de financiacion");
         require(!proposals[idProposal]._isCanceled, "La propuesta que quieres ejecutar ya ha sido cancelada");  
         require(!proposals[idProposal]._isApproved, "La propuesta sobre que quieres ejecutar ya ha sido aprobada"); 
