@@ -10,10 +10,9 @@ interface IExecutableProposal {
 }
 
 contract QuadraticVoting{ //Contrato para la votación cuadrática.
-
     VotingContract public votingContract; //Instancia del contrato ERC20
     uint256 totalBudget; //Presupuesto total en Weis para las votaciones
-    address _owner; //Owner del contrato. Es el que crea el contrato.
+    address public immutable _owner; //Owner del contrato. Es el que crea el contrato y será siempre el que crea el contrato
     bool isVotingOpen; //Almacenamos si la votación está abierta.
     mapping (uint256 => mapping (address => uint256)) proposal_votes_participant; //Número de votos por participante.
 
