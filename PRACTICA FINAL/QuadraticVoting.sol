@@ -46,6 +46,11 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
     uint256 public numProposals; //Numero de propuestas
     uint256 public numPendingProposals; //Propuestas de financiación pendientes.
 
+    /*Arrays para reducir el coste de los getters*/
+    uint256[] pendingProposals; //Propuestas pending para evitar tener que hacer bucles en getters. Guardamos los ids.
+    uint256[] approvedProposals;
+    uint256[] signalingProposals; //Propuestas de signaling para evitar tener que hacer bucles en getters. Guardamos los ids.
+
     //constructor de quadratic voting.
     constructor(uint256 _tokenPrice, uint256 _maxTokens) {
         require(_tokenPrice >0, "El precio de los tokens debe ser mayor que cero");
@@ -98,11 +103,7 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
     function openVoting () external payable onlyOwner {     
         require(!isVotingOpen, "La votacion ya esta abierta, no puedes volver a abrirla");
         require(msg.value >0, "El presupuesto inicial debe ser mayor que cero");
-
-        //Presupuesto total inicial que servirá para aprobar las apuestas.
         totalBudget = msg.value;
-        
-        //Marcamos las votaciones como abiertas.
         isVotingOpen=true;
     }
 
@@ -115,18 +116,17 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         //Calculamos cuántos tokens podemos emitir con value aportado por el participante
         uint256 numTokens= msg.value/votingContract.getTokenPrice();
         require(numTokens>=1, "Necesitas poder comprar al menos un token");
-
         //Registrar participante
         participants[msg.sender]=true;
         numParticipants++;        
-
         //Minteamos los tokens
         votingContract.mint(msg.sender, numTokens);
     }
 
-    /*DONE*/
+    /*DONE PERO HAY UNA DUDA*/
     function removeParticipant() public onlyExistentParticipants {
-        //Eliminar participante
+        /*¿Debería de poder eliminarse un participante del contrato si tiene votos en alguna propuesta?*/
+
         participants[msg.sender]=false; //Desmarcamos del mapping a este participante.
         numParticipants--;        
     }
@@ -153,14 +153,13 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
 
         if (budget > 0)  {
             newProposal._isSignaling= false;
-
             /*Aumentamos el número de propuestas pendientes. Las propuestas pendientes solo pueden ser de financiacion*/
             numPendingProposals++;
+            pendingProposals.push(proposalId);
         }
         else {
-
-            //Las propuestas de signailig no tienen presupuesto
-            newProposal._isSignaling= true ;
+            newProposal._isSignaling= true;
+            signalingProposals.push(proposalId);
         }
 
         //De momento no hay ni votos ni tokens para la nueva propuesta.
@@ -186,7 +185,16 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
 
         //Si es de financiación...
         if (!proposals[idProposal]._isSignaling){ 
+
             numPendingProposals--;
+
+            for (uint256 i = 0; i < pendingProposals.length; i++) {
+                if (pendingProposals[i] == idProposal) {
+                    pendingProposals[i] = pendingProposals[pendingProposals.length - 1];
+                    pendingProposals.pop();
+                    break;
+                }
+            }
         }
 
         /*NO TENEMOS QUE QUITAR DEL ARRAY PORQUE NO SE PUEDE HACER UN POP COMO EN JAVA */
@@ -199,15 +207,6 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         require(msg.value >= votingContract.getTokenPrice(), "Debes enviar el Ether necesario para poder comprar al menos un token.");
         //Comprobamos cuántos tokens podría comprar con el value aportado 
         uint256 boughtTokens = msg.value/ votingContract.getTokenPrice();
-
-        //No se si esta comprobación es necesaria.
-        require(boughtTokens >= 1, "Necesitas comprar al menos un Token");
-
-        
-        /*
-        PARA RECORDARLO YO: El término "mintear" proviene del inglés "mint", que significa "acuñar" o "crear"
-        en el contexto de monedas o activos. Mintea ese número de tokens
-        */
         votingContract.mint(msg.sender, boughtTokens);
     }
 
@@ -233,71 +232,17 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
 
     /*DONE*/
     function getPendingProposals() internal view onlyAfterOpen returns (uint[] memory ){
-
-        uint256[] memory tempIDs = new uint256[](proposalsArray.length);//Queremos un array mínimamente del tamaño de las peticiones pendientes
-        uint256 numPending=0;
-        //Ese tamaño no es el tamaño real que queremos, tenemos que meter los elementos que queramos y después volver a meterlos en otro array que tenga el tamaño real
-
-        /*ESTOS FORS QUIZÁS PODEMOS REDUCIR LA CANTIDAD DE GAS CON YUL*/
-        for (uint256 i=0; i< proposalsArray.length; i++) 
-        {
-            uint256 p_id= proposalsArray[i];//Sacamos el id
-
-            //Tenemos que comprobar que sea de financiación y que además no haya sido aprobada NI cancelada
-            if (!proposals[p_id]._isSignaling && !proposals[p_id]._isApproved && !proposals[p_id]._isCanceled) {
-                //Metemos el p_id en caso de que esto suceda porque significa que esta pending
-                tempIDs[numPending]= p_id ;
-                numPending++;
-            }   
-        }
-        
-        return getResultArray(numPending, tempIDs);
+        return pendingProposals;
     }
 
     /*DONE*/
     function getApprovedProposals() internal view onlyAfterOpen returns (uint[] memory ){
-        
-        uint256[] memory tempIDs = new uint256[](proposalsArray.length);//Queremos un array mínimamente del tamaño de las peticiones pendientes
-        uint256 numPending=0;
-        //Ese tamaño no es el tamaño real que queremos, tenemos que meter los elementos que queramos y después volver a meterlos en otro array que tenga el tamaño real
-
-        /*ESTOS FORS QUIZÁS PODEMOS REDUCIR LA CANTIDAD DE GAS CON YUL*/
-        for (uint256 i=0; i< proposalsArray.length; i++) 
-        {
-            uint256 p_id= proposalsArray[i];//Sacamos el id
-
-            //Tenemos que comprobar que sea de financiación y que además haya sido aprobada 
-            if (!proposals[p_id]._isSignaling && proposals[p_id]._isApproved) {
-                //Metemos el p_id en caso de que esto suceda porque significa que esta pending
-                tempIDs[numPending]= p_id;
-                numPending++;
-            }   
-        }
-
-        return  getResultArray(numPending, tempIDs);
+        return approvedProposals;
     }
 
     /*DONE*/
     function getSignalingProposals() internal view onlyAfterOpen returns (uint[] memory){
-        
-        uint256[] memory tempIDs = new uint256[](proposalsArray.length);//Queremos un array mínimamente del tamaño de las peticiones pendientes
-        uint256 numPending=0;
-        //Ese tamaño no es el tamaño real que queremos, tenemos que meter los elementos que queramos y después volver a meterlos en otro array que tenga el tamaño real
-
-        /*ESTOS FORS QUIZÁS PODEMOS REDUCIR LA CANTIDAD DE GAS CON YUL*/
-        for (uint256 i=0; i< proposalsArray.length; i++) 
-        {
-            uint256 p_id= proposalsArray[i];//Sacamos el id
-
-            //Tenemos que comprobar que sea de signalign 
-            if (proposals[p_id]._isSignaling) {
-                //Metemos el p_id en caso de que esto suceda porque significa que esta pending
-                tempIDs[numPending]= p_id;
-                numPending++;
-            }   
-        }
-
-        return getResultArray(numPending, tempIDs);
+        return signalingProposals;
     }
 
     /*DONE*/
@@ -399,7 +344,14 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
 
         proposals[idProposal]._isApproved = true;
         numPendingProposals--;
-
+        for (uint256 i = 0; i < pendingProposals.length; i++) {
+            if (pendingProposals[i] == idProposal) {
+                pendingProposals[i] = pendingProposals[pendingProposals.length - 1];
+                pendingProposals.pop();
+                break;
+            }
+        }
+        approvedProposals.push(idProposal); //Aumentamos el número de propuestas
         //Convertir tokens a weis para convertirlos en presupuesto
         uint256 tokensValue = proposals[idProposal]._numTokens * votingContract.getTokenPrice();
         totalBudget += tokensValue;
@@ -419,7 +371,6 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
     }
 
     function closeVoting () external onlyOwner onlyAfterOpen{       
-        uint256[] memory pendingProposals= getPendingProposals();
 
         /*Coste (p*v) con p siendo el numero de propuestas de financiación y v los votantes de esa propuesta*/
         for (uint256 i=0; i < pendingProposals.length; i++) 
@@ -455,10 +406,9 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
 
         }
 
-        uint256[] memory signalignProposalsResult= getSignalingProposals();
           // Procesar propuestas de signaling (ejecutar y devolver tokens)
-        for (uint256 i = 0; i < signalignProposalsResult.length; i++) {
-            uint256 proposalId = signalignProposalsResult[i];
+        for (uint256 i = 0; i < signalingProposals.length; i++) {
+            uint256 proposalId = signalingProposals[i];
             Proposal storage proposal = proposals[proposalId];
 
             if (!proposal._isCanceled && !proposal._isApproved) {
@@ -506,6 +456,9 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         // Reiniciar estado para nuevo proceso de votación
         isVotingOpen = false;
         proposalsArray = new uint256[](0);
+        signalingProposals = new uint256[](0);
+        pendingProposals= new uint256[](0);
+        approvedProposals =new uint256[](0);
         numProposals = 0;
         numPendingProposals = 0;
     }
