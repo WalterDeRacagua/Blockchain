@@ -5,29 +5,17 @@ pragma solidity ^0.8.0;
 import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC20/ERC20.sol";
 import "./VotingContract.sol";
 
-/*CREO QUE NO ES NECESARIO ESTE IMPORT MÁS QUE NADA PORQUE ERC20 CUENTA YA CON _burn*/
-// import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC20/extensions/ERC20Burnable.sol";
-// import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-
 interface IExecutableProposal {
     function executeProposal(uint256 proposalId, uint256 numVotes, uint256 numTokens) external payable;
 }
 
-
 contract QuadraticVoting{ //Contrato para la votación cuadrática.
 
-    //Instancia del contrato ERC20
-    VotingContract public votingContract;
-
+    VotingContract public votingContract; //Instancia del contrato ERC20
     uint256 totalBudget; //Presupuesto total en Weis para las votaciones
-
     address _owner; //Owner del contrato. Es el que crea el contrato.
-
-
     bool isVotingOpen; //Almacenamos si la votación está abierta.
-
     mapping (uint256 => mapping (address => uint256)) proposal_votes_participant; //Número de votos por participante.
-
 
     /*PARTICIPANTES*/
     uint256  numParticipants;
@@ -53,35 +41,22 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         /*Añado este atributo para no tener que hacer un for en la función de checkAndExecuteProposal*/
         uint256 _numTokens; //Número total de tokens que hay en la propuesta
 
-
         /*Necesitamos añadir un array con los addresses de los votantes para recorrerlos en la función de closeVoting.*/
         address[] _voters;
     }
 
-    /*Estructura auxiliar porque solidity no permite devolver mappings en funciones y Proposal tiene un map 
-    (Veremos si lo podemos solucionar para tener únicamente una estructura). Lo necesitamos para el getProposalInfo
-    */
-
     mapping (uint => Proposal) public proposals;//Id de la propuesta-> propuesta
-    uint256[] public proposalsArray;//Array con los identificadores de las propuestas
-
+    uint256[] public proposalsArray;//Array con los identificadores de las propuesta
     uint256 public numProposals; //Numero de propuestas
     uint256 public numPendingProposals; //Propuestas de financiación pendientes.
 
     //constructor de quadratic voting.
     constructor(uint256 _tokenPrice, uint256 _maxTokens) {
-
-        /*No se si  es correcto tener en el constructor requieres*/
         require(_tokenPrice >0, "El precio de los tokens debe ser mayor que cero");
         require(_maxTokens>0, "El maximo numero de tokens a emitir debe ser mayor que cero");
-
         _owner = msg.sender; 
-
         isVotingOpen = false;
-
-        /*Podemos sacar despues el precio y el max de los getter.*/
         votingContract = new VotingContract("DAO Vote Token", "DVT", _tokenPrice, _maxTokens);
-
         numProposals=0;
         numPendingProposals=0;
         totalBudget=0;
@@ -90,25 +65,23 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
     /* MODIFICADORES */
 
     modifier onlyOwner() { 
-        require(msg.sender == _owner, "Debes ser el owner del contrato para poder hacer esto.");
-        _;
+        require(msg.sender == _owner, "Debes ser el owner del contrato para poder hacer esto.");_;
     }
-
-
     modifier onlyAfterOpen() {
-        require(isVotingOpen, "La votacion tiene que estar abierta");
-        _;
+        require(isVotingOpen, "La votacion tiene que estar abierta");_;
     }
-
     modifier onlyProposalExist(uint256 idProposal){
-        require(idProposal < numProposals, "La propuesta que estas pasando no existe");
-        _;
+        require(idProposal < numProposals, "La propuesta que estas pasando no existe");_;
     }
-
-    /*Añadir un modificador que compruebe todo lo que se comprueban en las últimas funciones.*/
-
-
-
+    modifier onlyExistentParticipants(){
+        require(participants[msg.sender], "Debes haberte inscrito como participante anteriormente.");_;
+    }
+    modifier onlyNotCanceled(uint256 idProposal){
+        require(!proposals[idProposal]._isCanceled, "No se puede ejecutar si la propuesta ya ha sido cancelada"); _;
+    }
+    modifier onlyNotApproved(uint256 idProposal){
+        require(!proposals[idProposal]._isApproved, "La propuesta ya ha sido aprobada y no puedes ejecutar la funcion.");_; 
+    }
 
     /* FUNCIONES */
     
@@ -143,17 +116,14 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
     }
 
     /*DONE*/
-    function removeParticipant() public {
-        require(participants[msg.sender], "Particiapante no registrado. No puedes eliminar un participante que no esta registrado");
-
+    function removeParticipant() public onlyExistentParticipants {
         //Eliminar participante
         participants[msg.sender]=false; //Desmarcamos del mapping a este participante.
         numParticipants--;        
     }
 
     /*DONE*/
-    function addProposal (string calldata title, string calldata description, uint256 budget, address proposalContract) external onlyAfterOpen  returns (uint256) {
-        require(participants[msg.sender], "Debes inscribirte como participante para poder crear una propuesta");
+    function addProposal (string calldata title, string calldata description, uint256 budget, address proposalContract) external onlyAfterOpen onlyExistentParticipants  returns (uint256) {
         require(proposalContract != address(0) , "La direccion del contrato no es valida");
         require(bytes(title).length >0 , "El titulo de la propuesta no puede ser vacio");
         require(bytes(description).length>0, "La descripcion de la propuesta no puede ser vacia");
@@ -199,11 +169,9 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
     }
     
     //TODO, falta devolver tokens
-    function cancelProposal (uint idProposal) public onlyAfterOpen onlyProposalExist(idProposal){
+    function cancelProposal (uint idProposal) public onlyAfterOpen onlyProposalExist(idProposal) onlyNotCanceled(idProposal)
+    onlyNotApproved(idProposal){
         require(msg.sender == proposals[idProposal]._creator, "No puedes cancelar la propuesta si no eres el creador de la misma");
-        require(!proposals[idProposal]._isApproved, "No se pueden cancelar propuestas ya aprobadas.");
-        require(!proposals[idProposal]._isCanceled, "No se puede cancelar si la propuesta ya ha sido cancelada anteriormente");
-
         //Cancelamos la propuesta
         proposals[idProposal]._isCanceled=true;
 
@@ -218,10 +186,8 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
     }
 
     /*DONE*/
-    function buyTokens() external payable {
-        require(participants[msg.sender], "Para comprar tokens necesitas haberte inscrito como participante");
+    function buyTokens() external payable onlyExistentParticipants {
         require(msg.value >= votingContract.getTokenPrice(), "Debes enviar el Ether necesario para poder comprar al menos un token.");
-
         //Comprobamos cuántos tokens podría comprar con el value aportado 
         uint256 boughtTokens = msg.value/ votingContract.getTokenPrice();
 
@@ -237,8 +203,7 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
     }
 
     /*DONE*/
-    function sellTokens (uint256 tokensToReturn)  external  {
-        require(participants[msg.sender], "Para vender tokens necesitas haberte inscrito como participante");
+    function sellTokens (uint256 tokensToReturn)  external onlyExistentParticipants {
         require(tokensToReturn > 0, "No puedes vender una cantidad inferior a 1 token.");
         require(votingContract.balanceOf(msg.sender)>= tokensToReturn, "No puedes vender mas tokens de los que posees");
 
@@ -374,12 +339,10 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
     }
 
     /*NO DICE NADA PERO YO SUPONGO QUE HAY QUE LLAMAR SOLO SI LA VOTACIÓN ESTÁ ABIERTA.*/
-    function stake (uint256 idProposal, uint256 voteAmount) external onlyAfterOpen onlyProposalExist(idProposal){
-        require(participants[msg.sender], "Para participar tienes que estar registrado como participante de la DAO!");
+    function stake (uint256 idProposal, uint256 voteAmount) external onlyAfterOpen onlyProposalExist(idProposal) onlyExistentParticipants  
+    onlyNotCanceled(idProposal) onlyNotApproved(idProposal){
         require(voteAmount >0, "No puedes depositar menos de 1 voto. Como vas a votar sin votar?");
-        require(!proposals[idProposal]._isCanceled, "No puedes votar sobre una propuesta que ya ha sido cancelada");
-        require(!proposals[idProposal]._isApproved, "La propuesta ya ha sido aprovada. Por tanto no puedes votar en ella");
-
+        
         /*
         Una vez estas comprobaciones, vamos a ver cuántos votos ha hecho ya el participante para comprobar los tokens
         que necesita para realizar la propuesta. 
@@ -408,20 +371,15 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         proposals[idProposal]._numTokens += tokensNeeded;
     }
     
-    function withdrawFromProposal (uint256 voteAmount, uint256 idProposal) external onlyAfterOpen onlyProposalExist(idProposal) {
-        require(participants[msg.sender], "Debes darte de alta como participante para ejecutar esta funcion");
+    function withdrawFromProposal (uint256 voteAmount, uint256 idProposal) external onlyAfterOpen onlyProposalExist(idProposal) 
+    onlyExistentParticipants  onlyNotCanceled(idProposal) onlyNotApproved(idProposal){
         require(voteAmount >0, "Necesitas dejar un voto por lo menos."); 
-        require(!proposals[idProposal]._isCanceled, "La propuesta sobre la que quieres retirar votos ya ha sido cancelada");
-        require(!proposals[idProposal]._isApproved, "La propuesta ya ha sido aprobada");
         require(proposal_votes_participant[idProposal][msg.sender] >= voteAmount, "Estas intentando retirar mas votos de los que has realizado" );       
-
         //Calcular cuántos votos tenemos ahora, y con cuantos nos vamos a quedar tras retirar los votos.
         uint256 currentVotes = proposal_votes_participant[idProposal][msg.sender];
         uint256 votesAfterWithdraw = currentVotes - voteAmount;
-
         //Calcular tokens a devolver 
         uint256 tokensToReturn = (currentVotes*currentVotes)- (votesAfterWithdraw*votesAfterWithdraw);
-
         require(IERC20(address(votingContract)).balanceOf(address(this))>= tokensToReturn, "No tenemos suficientes tokens para retirarlos");
 
         //Lo tendremos que cambiar porque lo de Transfer limita el gas. 
@@ -459,11 +417,9 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
 
     }
 
-
-    function _checkAndExecuteProposal (uint256 idProposal) internal onlyAfterOpen onlyProposalExist(idProposal){
+    function _checkAndExecuteProposal (uint256 idProposal) internal onlyAfterOpen onlyProposalExist(idProposal) onlyNotCanceled(idProposal)
+    onlyNotApproved(idProposal){
         require(!proposals[idProposal]._isSignaling, "La propuesta debe ser de financiacion");
-        require(!proposals[idProposal]._isCanceled, "La propuesta que quieres ejecutar ya ha sido cancelada");  
-        require(!proposals[idProposal]._isApproved, "La propuesta sobre que quieres ejecutar ya ha sido aprobada"); 
         require(proposals[idProposal]._contractProposal != address(0), "La propuesta no tiene contrato de votacion asociado");
         require(totalBudget > proposals[idProposal]._budget, "El presupuesto total del contrato debe ser superior al demandado en la propuesta");
 
@@ -488,9 +444,7 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         require(success, "La ejecucion de la propuesta ha fallado");
     }
 
-    function closeVoting () external onlyOwner onlyAfterOpen{
-        
-        
+    function closeVoting () external onlyOwner onlyAfterOpen{       
         uint256[] memory pendingProposals= getPendingProposals();
 
         /*Coste (p*v) con p siendo el numero de propuestas de financiación y v los votantes de esa propuesta*/
@@ -581,5 +535,4 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         numProposals = 0;
         numPendingProposals = 0;
     }
-    
 }
