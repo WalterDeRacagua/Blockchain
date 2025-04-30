@@ -14,26 +14,29 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
     uint256 totalBudget; //Presupuesto total en Weis para las votaciones
     address public immutable _owner; //Owner del contrato. Es el que crea el contrato y será siempre el que crea el contrato
     bool isVotingOpen; //Almacenamos si la votación está abierta.
-    mapping (uint256 => mapping (address => uint256)) proposal_votes_participant; //Número de votos por participante.
+    mapping (uint256 => mapping (address => uint256)) proposal_votes_participant; //Número de votos por participante en una propuesta
+    mapping (uint256 => mapping (address => uint256)) proposal_participant_index; //Indice en el array del votante correspondiente para esa propuesta.
+    mapping (uint256 => mapping (address => bool)) proposal_participant_hasVoted; //Rastrea si un usuario ha votado en una propuesta.
+
 
     /*PARTICIPANTES*/
     uint256  numParticipants;
     mapping (address=>bool)  participants;//Para ver si están registrados
 
     struct Proposal {
-        uint256 id;//Identificador único
-        string _title; //Título de la propuesta.
+        uint256 id;
+        string _title; 
         string _description;
-        uint256 _participants; //Número de participantes
-        uint256 _budget;//Presupuesto de la propuesta.
-        uint256 _votes; //Numero de votos totales en la propuesta
+        uint256 _participants;
+        uint256 _budget;
+        uint256 _votes; 
         uint256 _umbral;
         
         address _contractProposal; //Será el receptor del dinero presupuestado en caso de ser aprobada la propuesta.
-        address _creator; //Creador de la propuesta
-        bool _isSignaling; //Si no es de signalign será financiera
-        bool _isApproved;//Se ha aprobado la propuesta
-        bool _isCanceled; //Se ha cancelado la propuesta.
+        address _creator; 
+        bool _isSignaling; 
+        bool _isApproved;
+        bool _isCanceled;
 
         /*Añado este atributo para no tener que hacer un for en la función de checkAndExecuteProposal*/
         uint256 _numTokens; //Número total de tokens que hay en la propuesta
@@ -41,7 +44,6 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
     }
 
     mapping (uint => Proposal) public proposals;//Id de la propuesta-> propuesta
-    uint256[] public proposalsArray;//Array con los identificadores de las propuesta
     uint256 public numProposals; //Numero de propuestas
     uint256 public numPendingProposals; //Propuestas de financiación pendientes.
 
@@ -111,8 +113,6 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
 
     /*DONE PERO HAY UNA DUDA*/
     function removeParticipant() public onlyExistentParticipants {
-        /*¿Debería de poder eliminarse un participante del contrato si tiene votos en alguna propuesta?*/
-
         participants[msg.sender]=false; //Desmarcamos del mapping a este participante.
         numParticipants--;        
     }
@@ -160,14 +160,14 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
     }
     
     //TODO, falta devolver tokens
-    /*Tengo que conseguir hacer esto con coste constante */
+    /*Si no me equivoco, como hay que devolver a cada votante sus tokens, este método tiene que ser lineal*/
     function cancelProposal (uint idProposal) public onlyAfterOpen onlyProposalExist(idProposal) onlyNotCanceled(idProposal)
     onlyNotApproved(idProposal){
         require(msg.sender == proposals[idProposal]._creator, "No puedes cancelar la propuesta si no eres el creador de la misma");
         //Cancelamos la propuesta
         proposals[idProposal]._isCanceled=true;
 
-        //Si es de financiación...
+        //Si es de financiación este bucle lo podemos eliminar.
         if (!proposals[idProposal]._isSignaling){ 
 
             numPendingProposals--;
@@ -191,6 +191,8 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         require(msg.value >= votingContract.getTokenPrice(), "Debes enviar el Ether necesario para poder comprar al menos un token.");
         //Comprobamos cuántos tokens podría comprar con el value aportado 
         uint256 boughtTokens = msg.value/ votingContract.getTokenPrice();
+        require(boughtTokens> 1, "Debes poder comprar al menos un Token");
+
         votingContract.mint(msg.sender, boughtTokens);
     }
 
@@ -268,9 +270,12 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         bool success = IERC20(address(votingContract)).transferFrom(msg.sender, address(this), tokensNeeded);
         require(success, "La transferencia de Tokens ha fallado");
 
-        //Si se trata de un votante nuevo lo tenemos que meter en el array
+        //Si se trata de un votante nuevo lo tenemos que meter en el array de votos
         if (currentVotes==0){
             proposals[idProposal]._voters.push(msg.sender);
+            proposal_participant_index[idProposal][msg.sender]= proposals[idProposal]._voters.length - 1;
+            proposal_participant_hasVoted[idProposal][msg.sender]= true;
+
         }
 
         //Actualizamos los votos y tokens si ha ido todo guay
@@ -408,7 +413,7 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
             if (!proposal._isCanceled && !proposal._isApproved) {
                 // Ejecutar propuesta de signaling
                 if (proposal._contractProposal != address(0)) {
-                    proposal._contractProposal.call{value: 0}
+                    (bool success, ) =proposal._contractProposal.call{value: 0}
                     (
                         abi.encodeWithSelector(
                             IExecutableProposal.executeProposal.selector,
@@ -449,11 +454,12 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
 
         // Reiniciar estado para nuevo proceso de votación
         isVotingOpen = false;
-        proposalsArray = new uint256[](0);
         signalingProposals = new uint256[](0);
         pendingProposals= new uint256[](0);
         approvedProposals =new uint256[](0);
         numProposals = 0;
         numPendingProposals = 0;
+
+        /*AÑADIR UN EVENTO QUIZÁS PARA QUE DESDE FUERA PUEDAN SABER QUE SE HA CERRADO LA VOTACIÓN*/
     }
 }
