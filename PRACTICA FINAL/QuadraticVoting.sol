@@ -27,7 +27,6 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         uint256 id;
         string _title; 
         string _description;
-        uint256 _participants;
         uint256 _budget;
         uint256 _votes; 
         uint256 _umbral;
@@ -132,7 +131,6 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         newProposal.id = proposalId;
         newProposal._title = title;
         newProposal._description= description;
-        newProposal._participants=0;
         newProposal._budget= budget; //Ahora estamos poniendo el presupuesto.
         newProposal._contractProposal= proposalContract;
         newProposal._creator=msg.sender;
@@ -243,7 +241,6 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         p_info._isApproved =  proposals[idProposal]._isApproved;
         p_info._isCanceled =  proposals[idProposal]._isCanceled;
         p_info._isSignaling =  proposals[idProposal]._isSignaling;
-        p_info._participants =  proposals[idProposal]._participants;
         p_info._title =  proposals[idProposal]._title;
         p_info._umbral =  proposals[idProposal]._umbral;
         
@@ -275,13 +272,22 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
             proposals[idProposal]._voters.push(msg.sender);
             proposal_participant_index[idProposal][msg.sender]= proposals[idProposal]._voters.length - 1;
             proposal_participant_hasVoted[idProposal][msg.sender]= true;
-
         }
 
         //Actualizamos los votos y tokens si ha ido todo guay
         proposal_votes_participant[idProposal][msg.sender]= totalVotes ; 
         proposals[idProposal]._votes+= voteAmount;
         proposals[idProposal]._numTokens += tokensNeeded;
+
+        /*Como hemos recibido un voto, tenemos que recalcular el umbral*/
+        if (!proposals[idProposal]._isSignaling){
+            //Llamar a un método que nos recalcule el umbral (llamando a una función interna).
+            proposals[idProposal]._umbral;
+
+            if (proposals[idProposal]._votes > proposals[idProposal]._umbral && totalBudget >= proposals[idProposal]._budget) {
+                _checkAndExecuteProposal(idProposal);
+            }
+        }
     }
     
     /*Intentar buscar un mapping y arrays para reducir el coste del bucle for.*/
@@ -307,22 +313,18 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
 
         //Ahora tenemos que actualizar el array por si el número de votos es 0.
         if (votesAfterWithdraw ==0) {
-            //recorremos los votos. En el peor de los casos es lineal 
-            for (uint256 i=0; i< proposals[idProposal]._voters.length; i++) 
-            {
-                if ( proposals[idProposal]._voters[i]==msg.sender) {
-                    //Lo que voy a hacer (no se si está bien) es cambiar de posición al último el que quiero eliminar para hacer el pop() correctamente
-                    proposals[idProposal]._voters[i] = proposals[idProposal]._voters[proposals[idProposal]._voters.length-1];
-                    proposals[idProposal]._voters.pop();
-
-                    /*
-                    Lo que he querido hacer es cambiar por el último el que quiero quitar, de forma que en la posición
-                    i actual tenemos el que antes era el último. En la última posición tenemos el mismo que en i ahora
-                    mismo (duplicado), por lo que eliminamos el último con pop(). De esta forma nos cargamos al que no queremos.
-                    */
-                    break ; 
-                }
+            uint256 index =proposal_participant_index[idProposal][msg.sender];
+            uint256 last = proposals[idProposal]._voters.length-1;
+            if (index != last) {
+                /*Tendremos que cambiar posición y después popear*/
+                address lastVoter = proposals[idProposal]._voters[last];
+                proposals[idProposal]._voters[index]= lastVoter;
+                proposal_participant_index[idProposal][lastVoter]=index;
             }
+
+            proposals[idProposal]._voters.pop();
+            proposal_participant_hasVoted[idProposal][msg.sender]= false; //Ya no ha votado en la propuesta
+            delete proposal_participant_index[idProposal][msg.sender];
         }
     }
 
@@ -379,15 +381,13 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
             numPendingProposals--;
 
             //Tenemos que devolver tokens a los votantes 
-            for (uint256 j = 0; j < proposals[id]._voters.length; j++) {
-                
+            for (uint256 j = 0; j < proposals[id]._voters.length; j++) {  
                 address voter = proposals[id]._voters[j];
                 uint256 numVotesVoter = proposal_votes_participant[id][voter];
-
                 if (numVotesVoter>0) {
                     uint256 tokensToReturn = numVotesVoter * numVotesVoter;
                     proposal_votes_participant[id][voter]=0;
-
+                    proposal_participant_hasVoted[id][voter]= false;
                     if (tokensToReturn >0) {
 
                         /*IMPORTANTE, NO SE HACE CON TRANSFER PORQUE LIMITA EL GAS, CAMBIAR POR CALL.*/
@@ -395,25 +395,22 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
                         //Continuar incluso si falla para no bloquear.
                     }
                 }
-
             }
 
             //Ya no tiene votos la propuesta
             proposals[id]._votes =0;
             proposals[id]._numTokens =0;
-            proposals[id]._voters = new address[](0);
-
+            delete proposals[id]._voters;
         }
 
           // Procesar propuestas de signaling (ejecutar y devolver tokens)
         for (uint256 i = 0; i < signalingProposals.length; i++) {
             uint256 proposalId = signalingProposals[i];
-            Proposal storage proposal = proposals[proposalId];
-
+            Proposal storage proposal = proposals[proposalId]; //Como un puntero de Java, como nos dijo Jesús.
             if (!proposal._isCanceled && !proposal._isApproved) {
                 // Ejecutar propuesta de signaling
                 if (proposal._contractProposal != address(0)) {
-                    (bool success, ) =proposal._contractProposal.call{value: 0}
+                    (bool success, ) =proposal._contractProposal.call{value: 0, gas:100000}
                     (
                         abi.encodeWithSelector(
                             IExecutableProposal.executeProposal.selector,
@@ -432,6 +429,7 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
                     if (votes > 0) {
                         uint256 tokensToReturn = votes * votes;
                         proposal_votes_participant[proposalId][voter]= 0;
+                        proposal_participant_hasVoted[proposalId][voter]= false;
                         if (tokensToReturn > 0) {
                             //Esto tendremos que cambiarlo
                             IERC20(address(votingContract)).transfer(voter, tokensToReturn);
@@ -440,7 +438,7 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
                 }
                 proposal._votes = 0;
                 proposal._numTokens = 0;
-                proposal._voters = new address[](0);
+                delete proposal._voters;
             }
         }
 
