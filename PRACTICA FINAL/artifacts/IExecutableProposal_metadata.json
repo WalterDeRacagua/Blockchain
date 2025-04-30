@@ -57,11 +57,11 @@
 	},
 	"sources": {
 		"PRACTICA FINAL/QuadraticVoting.sol": {
-			"keccak256": "0x4e3d9b777d6e02925589cedc2b43bd764a0b50ca602d4c6ca806b429108f816a",
+			"keccak256": "0x2b08030f7e13131ffb994d5b5775c18482025eeabb0ab4981b36e386f55464ce",
 			"license": "GPL-3.0",
 			"urls": [
-				"bzz-raw://44fc8b624eb91e6a1bf2ed6f055470ebe977b0984bb81234a17abb4c1bfd8a9a",
-				"dweb:/ipfs/Qmd5cYLM39P3cYgnQTvzB3DJ5y6kCy9YMsoyxgcMeusFVV"
+				"bzz-raw://4a8063395a6792ce3f6ec457648b18b6b93705f1c6832713cb4683bcbe98d77b",
+				"dweb:/ipfs/QmcttN77TCzDfNjCk1gkwtpRWJ3fzbHc9YsTGWyp31b2dS"
 			]
 		},
 		"PRACTICA FINAL/VotingContract.sol": {

@@ -395,6 +395,9 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
                         //Continuar incluso si falla para no bloquear.
                     }
                 }
+                delete proposal_votes_participant[id][voter];
+                delete proposal_participant_index[id][voter];
+                delete proposal_participant_hasVoted[id][voter];
             }
 
             //Ya no tiene votos la propuesta
@@ -435,6 +438,9 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
                             IERC20(address(votingContract)).transfer(voter, tokensToReturn);
                         }
                     }
+                    delete proposal_votes_participant[proposalId][voter];
+                    delete proposal_participant_index[proposalId][voter];
+                    delete proposal_participant_hasVoted[proposalId][voter];
                 }
                 proposal._votes = 0;
                 proposal._numTokens = 0;
