@@ -51,25 +51,25 @@
 		},
 		"optimizer": {
 			"enabled": true,
-			"runs": 1000
+			"runs": 201
 		},
 		"remappings": []
 	},
 	"sources": {
 		"PRACTICA FINAL/QuadraticVoting.sol": {
-			"keccak256": "0xe933dd83f0c89944c28e4545c0eda2a36c3ca3e10cd2252236897a1421bcf907",
+			"keccak256": "0x69845ae2948f357b5f7741a1eb8aa681bf24e720be87dcc8760c7bc610f8aa5f",
 			"license": "GPL-3.0",
 			"urls": [
-				"bzz-raw://25c64db60930a02ddfc2710ca9bd9fb091a33eccf11b94c1f42e9052cad3fad4",
-				"dweb:/ipfs/QmTdLUutWYogtHjAW2LwcmaUkR9mD7t2HyXgxkcVyNtG27"
+				"bzz-raw://39ac59e01bb5c61319041cd64f79864980e67c6d9d6890cbb5cb4317daa73006",
+				"dweb:/ipfs/QmWehcCP4Xu7o8Xqntd7VVfar3y9tbdMDjvBGg41KLwzts"
 			]
 		},
 		"PRACTICA FINAL/VotingContract.sol": {
-			"keccak256": "0x3d8a4459c4ec79cf471b2f2f11d08ecde346e19b1f7066ec302db62e51e57b7f",
+			"keccak256": "0xcc0a74b190cde1394d5b9cb9857f5c32bf9055ba3244d9102eb6eeb86181c192",
 			"license": "GPL-3.0",
 			"urls": [
-				"bzz-raw://9723100033908cdf38cf9a73a2ae1405b693ddccd4ef9f71b248922fdb98aabc",
-				"dweb:/ipfs/QmThYTT9YAthYXaDna2zHwCns1ft3VSqLBafhPtHW6tVjm"
+				"bzz-raw://4e722090e0f8413a9729f72923e30a4c2a81effedb06018da6e702ca26718f97",
+				"dweb:/ipfs/QmRt6PvPe53CbJyYa1gZXSTrRdhFsMdrt2TXK4WSQ7euj7"
 			]
 		},
 		"https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/interfaces/draft-IERC6093.sol": {

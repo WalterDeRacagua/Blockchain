@@ -127,7 +127,7 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         uint256 proposalId =numProposals;
         numProposals++;
 
-        //Creamos el objeto propuesta asignando sus atributos correspondientes.
+        //Creamos el objeto propuesta asignando sus atributos correspondientes. Variable storage locales actúan como punteros.
         Proposal storage newProposal=proposals[proposalId];
         newProposal.id = proposalId;
         newProposal._title = title;
@@ -156,13 +156,11 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         newProposal._isApproved=false;
         newProposal._isCanceled=false;
 
-        //Tenemos que meter dentro del array todas las propuestas, luego en los getters comprobamos el resto de cosas.
-        proposalsArray.push(proposalId);    
-
         return proposalId;
     }
     
     //TODO, falta devolver tokens
+    /*Tengo que conseguir hacer esto con coste constante */
     function cancelProposal (uint idProposal) public onlyAfterOpen onlyProposalExist(idProposal) onlyNotCanceled(idProposal)
     onlyNotApproved(idProposal){
         require(msg.sender == proposals[idProposal]._creator, "No puedes cancelar la propuesta si no eres el creador de la misma");
@@ -281,6 +279,7 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         proposals[idProposal]._numTokens += tokensNeeded;
     }
     
+    /*Intentar buscar un mapping y arrays para reducir el coste del bucle for.*/
     function withdrawFromProposal (uint256 voteAmount, uint256 idProposal) external onlyAfterOpen onlyProposalExist(idProposal) 
     onlyExistentParticipants  onlyNotCanceled(idProposal) onlyNotApproved(idProposal){
         require(voteAmount >0, "Necesitas dejar un voto por lo menos."); 
@@ -347,6 +346,15 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
 
         //Ejecutar la propuesta, tenemos que tener en cuenta el límite de gas. Tengo dudas de si se hace aquí o en un require.
         //Obviamente si tenemos que poner un límite concreto de gas IMPOSIBLE USAR TRANSFER.
+        /*
+
+        abi.encodeWithSelector: Codifica una llamada a la función executeProposal con los argumentos:
+        idProposal: El identificador de la propuesta.
+        proposals[idProposal]._votes: El número de votos asociados con la propuesta.
+        proposals[idProposal]._numTokens: El número de tokens asociados con la propuesta (quizás representando el poder de voto o algún otro peso).
+        Esta codificación genera los datos binarios que se envían al contrato _contractProposal para invocar la función executeProposal con los argumentos especificados.
+        No me dejaba hacerlo de otra forma.
+        */
         (bool success, )= proposals[idProposal]._contractProposal.call{value: proposals[idProposal]._budget, gas: 10000}
         (
             /*Tengo que usar lo de selector para poder llamar a executeProposal*/
@@ -409,7 +417,7 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
                             proposal._numTokens
                         )
                     );
-                    // Continuar incluso si falla
+                    // Continuar incluso si falla de momento
                 }
 
                 // Devolver tokens a los votantes
