@@ -74,19 +74,6 @@
 			},
 			{
 				"inputs": [],
-				"name": "_owner",
-				"outputs": [
-					{
-						"internalType": "address",
-						"name": "",
-						"type": "address"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [],
 				"name": "addParticipant",
 				"outputs": [],
 				"stateMutability": "payable",
@@ -254,109 +241,9 @@
 			},
 			{
 				"inputs": [],
-				"name": "numPendingProposals",
-				"outputs": [
-					{
-						"internalType": "uint256",
-						"name": "",
-						"type": "uint256"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [],
-				"name": "numProposals",
-				"outputs": [
-					{
-						"internalType": "uint256",
-						"name": "",
-						"type": "uint256"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [],
 				"name": "openVoting",
 				"outputs": [],
 				"stateMutability": "payable",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "uint256",
-						"name": "",
-						"type": "uint256"
-					}
-				],
-				"name": "proposals",
-				"outputs": [
-					{
-						"internalType": "uint256",
-						"name": "id",
-						"type": "uint256"
-					},
-					{
-						"internalType": "string",
-						"name": "_title",
-						"type": "string"
-					},
-					{
-						"internalType": "string",
-						"name": "_description",
-						"type": "string"
-					},
-					{
-						"internalType": "uint256",
-						"name": "_budget",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "_votes",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "_umbral",
-						"type": "uint256"
-					},
-					{
-						"internalType": "address",
-						"name": "_contractProposal",
-						"type": "address"
-					},
-					{
-						"internalType": "address",
-						"name": "_creator",
-						"type": "address"
-					},
-					{
-						"internalType": "bool",
-						"name": "_isSignaling",
-						"type": "bool"
-					},
-					{
-						"internalType": "bool",
-						"name": "_isApproved",
-						"type": "bool"
-					},
-					{
-						"internalType": "bool",
-						"name": "_isCanceled",
-						"type": "bool"
-					},
-					{
-						"internalType": "uint256",
-						"name": "_numTokens",
-						"type": "uint256"
-					}
-				],
-				"stateMutability": "view",
 				"type": "function"
 			},
 			{
@@ -395,19 +282,6 @@
 				"name": "stake",
 				"outputs": [],
 				"stateMutability": "nonpayable",
-				"type": "function"
-			},
-			{
-				"inputs": [],
-				"name": "votingContract",
-				"outputs": [
-					{
-						"internalType": "contract VotingContract",
-						"name": "",
-						"type": "address"
-					}
-				],
-				"stateMutability": "view",
 				"type": "function"
 			},
 			{
@@ -450,18 +324,18 @@
 			"bytecodeHash": "ipfs"
 		},
 		"optimizer": {
-			"enabled": true,
-			"runs": 100
+			"enabled": false,
+			"runs": 200
 		},
 		"remappings": []
 	},
 	"sources": {
 		"PRACTICA FINAL/QuadraticVoting.sol": {
-			"keccak256": "0xe1abbc3a156a568b05dce32a3c8be868705c16cc598ba811f520243d43f33b75",
+			"keccak256": "0x89cfa84f2c385f6b46ffc9571c9877c9a8ee719660f95f4f8ca9bf30dedccfad",
 			"license": "GPL-3.0",
 			"urls": [
-				"bzz-raw://245412305cc0f63fa065667ffa09325e13d7b54e8eaa1fb216e6cb2fbf79e14c",
-				"dweb:/ipfs/QmRV5y6vVQ2CaT6o9xQoA8v5JW7WsCwMjStGc3PXCrJ2Wv"
+				"bzz-raw://a80d4b4967fde70dbf387ee20da06e03221afd9ede5c41413846cdca78420ba7",
+				"dweb:/ipfs/QmasoiuMrtPtHD8SwhTSXbHaaKpFsBEjnvaAitr6dWtu1K"
 			]
 		},
 		"PRACTICA FINAL/VotingContract.sol": {

@@ -9,15 +9,16 @@ interface IExecutableProposal {
     function executeProposal(uint256 proposalId, uint256 numVotes, uint256 numTokens) external payable;
 }
 
-contract QuadraticVoting{ //Contrato para la votación cuadrática.
-    VotingContract public votingContract; //Instancia del contrato ERC20
-    uint256 totalBudget; //Presupuesto total en Weis para las votaciones
-    address public immutable _owner; //Owner del contrato. Es el que crea el contrato y será siempre el que crea el contrato
+contract QuadraticVoting{ 
+    VotingContract  votingContract; 
+    uint256 totalBudget; 
+    address  immutable _owner; //Owner del contrato. Es el que crea el contrato y será siempre el que crea el contrato
     bool isVotingOpen; //Almacenamos si la votación está abierta.
     mapping (uint256 => mapping (address => uint256)) proposal_votes_participant; //Número de votos por participante en una propuesta
     mapping (uint256 => mapping (address => uint256)) proposal_participant_index; //Indice en el array del votante correspondiente para esa propuesta.
     mapping (uint256 => mapping (address => bool)) proposal_participant_hasVoted; //Rastrea si un usuario ha votado en una propuesta.
     mapping (uint256 => uint256) proposal_indexInPending; //Para cada propuesta (id) cuál es su indice en el array de pending.
+    mapping (uint256 => uint256) proposal_indexInSignalign; //Para cada propuesta (id) de signaling, cuál es su  indice en el array de pending.
 
     uint256  numParticipants;
     mapping (address=>bool)  participants;//Para ver si están registrados
@@ -29,20 +30,16 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         uint256 _budget;
         uint256 _votes; 
         uint256 _umbral;
-        
         address _contractProposal; //Será el receptor del dinero presupuestado en caso de ser aprobada la propuesta.
         address _creator; 
         bool _isSignaling; 
         bool _isApproved;
         bool _isCanceled;
-
         uint256 _numTokens; //Número total de tokens que hay en la propuesta
         address[] _voters;//Necesitamos añadir un array con los addresses de los votantes para recorrerlos en la función de closeVoting
     }
-
-    mapping (uint => Proposal) public proposals;//Id de la propuesta-> propuesta
-    uint256 public numProposals; //Numero de propuestas
-    uint256 public numPendingProposals; //Propuestas de financiación pendientes.
+    mapping (uint => Proposal) proposals;//Id de la propuesta-> propuesta
+    uint256 numProposals; //Numero de propuestas
 
     /*Arrays para reducir el coste de los getters*/
     uint256[] pendingProposals; //Propuestas pending para evitar tener que hacer bucles en getters. Guardamos los ids.
@@ -57,7 +54,6 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         isVotingOpen = false;
         votingContract = new VotingContract("DAO Vote Token", "DVT", _tokenPrice, _maxTokens);
         numProposals=0;
-        numPendingProposals=0;
         totalBudget=0;
     }
 
@@ -68,7 +64,6 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
     event ProposalCanceled(uint256 indexed proposalId);
     event ProposalApproved(uint256 indexed proposalId);
 
-    
     /* MODIFICADORES */
     modifier onlyOwner() { 
         require(msg.sender == _owner, "Debes ser el owner del contrato para poder hacer esto.");_;
@@ -96,7 +91,7 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         }
         // Proposal storage p = proposals[idProposal];
         uint256 firstPart = (2e17 + (proposals[idProposal]._budget*1e18/totalBudget)) * numParticipants/1e18;
-        return firstPart +numPendingProposals;       
+        return firstPart + pendingProposals.length;       
     }
 
     function transferTokens(address to, uint256 amount) internal {
@@ -104,6 +99,18 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         require(to != address(0), "El address debe existir");
         (bool success, ) = address(votingContract).call{gas:100000}(abi.encodeWithSelector(IERC20.transfer.selector, to, amount));
         require(success, "La transferencia de tokens ha fallado.");
+    }
+
+    function removeFromArrayAndMapping(uint256[] storage array, mapping(uint256=>uint256) storage map, uint256 idProposal)internal{
+        uint256 index = map[idProposal];
+        uint256 last = array.length-1;
+        if (index != last) {
+            uint256 lastProposalId = array[last];
+            array[index]= lastProposalId;
+            map[lastProposalId]=index;
+        }
+        array.pop();
+        delete map[idProposal];
     }
 
     /* FUNCIONES QUE SE PIDEN EN EL ENUNCIADO*/
@@ -133,7 +140,7 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         votingContract.mint(msg.sender, numTokens);
     }
 
-    /*DONE PERO HAY UNA DUDA*/
+    /*DONE*/
     function removeParticipant() public onlyExistentParticipants {
         participants[msg.sender]=false; //Desmarcamos del mapping a este participante.
         numParticipants--;        
@@ -148,7 +155,6 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         //Aumentamos el numero de propuestas y cogemos el índice actual para asignarselo a la nueva que queremos añadir.
         uint256 proposalId =numProposals;
         numProposals++;
-
         //Creamos el objeto propuesta asignando sus atributos correspondientes. Variable storage locales actúan como punteros.
         Proposal storage newProposal=proposals[proposalId];
         newProposal.id = proposalId;
@@ -157,11 +163,8 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         newProposal._budget= budget; //Ahora estamos poniendo el presupuesto.
         newProposal._contractProposal= proposalContract;
         newProposal._creator=msg.sender;
-
         if (budget > 0)  {
             newProposal._isSignaling= false;
-            /*Aumentamos el número de propuestas pendientes. Las propuestas pendientes solo pueden ser de financiacion*/
-            numPendingProposals++;
             pendingProposals.push(proposalId);
             proposal_indexInPending[proposalId]= pendingProposals.length -1;
             newProposal._umbral = calculateThresold(proposalId);
@@ -169,12 +172,12 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         else {
             newProposal._isSignaling= true;
             signalingProposals.push(proposalId);
+            proposal_indexInSignalign[proposalId]= signalingProposals.length-1;
         }
 
         //De momento no hay ni votos ni tokens para la nueva propuesta.
         newProposal._votes=0;
         newProposal._numTokens=0; 
-
         //La propuesta no se ha cancelado ni aprobado por el momento, la acabamos de crear
         newProposal._isApproved=false;
         newProposal._isCanceled=false;
@@ -183,7 +186,6 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         return proposalId;
     }
     
-    //TODO, falta devolver tokens
     /*Si no me equivoco, como hay que devolver a cada votante sus tokens, este método tiene que ser lineal*/
     function cancelProposal (uint idProposal) public onlyAfterOpen onlyProposalExist(idProposal) onlyNotCanceled(idProposal)
     onlyNotApproved(idProposal){
@@ -191,21 +193,14 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         //Cancelamos la propuesta
         proposals[idProposal]._isCanceled=true;
 
-        //Si es de financiación este bucle lo podemos eliminar.
+        //Si es de financiación entonces 
         if (!proposals[idProposal]._isSignaling){ 
-            numPendingProposals--;
-            uint256 index = proposal_indexInPending[idProposal];
-            uint256 last = pendingProposals.length-1;
-            if(index !=last){
-                uint256 lastProposalId= pendingProposals[last];
-                pendingProposals[index]= lastProposalId;
-                proposal_indexInPending[lastProposalId]=index;
-            }
-            pendingProposals.pop();
-            delete proposal_indexInPending[idProposal];
+            removeFromArrayAndMapping(pendingProposals, proposal_indexInPending, idProposal);
+        }
+        else{
+            removeFromArrayAndMapping(signalingProposals, proposal_indexInSignalign, idProposal);
         }
 
-        /*FALTA DEVOLVER LOS TOKENS COMPRADOS.*/
         for (uint256 i=0; i <proposals[idProposal]._voters.length; i++) 
         {
             address voter = proposals[idProposal]._voters[i];
@@ -375,17 +370,7 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         require(totalBudget > proposals[idProposal]._budget, "El presupuesto total del contrato debe ser superior al demandado en la propuesta");
 
         proposals[idProposal]._isApproved = true;
-        numPendingProposals--;
-        uint256 index = proposal_indexInPending[idProposal];
-        uint256 last = pendingProposals.length-1;
-
-        if(index != last){
-            uint256 lastProposalId =pendingProposals[last];
-            pendingProposals[index]= lastProposalId;
-            proposal_indexInPending[lastProposalId]= index;
-        }
-        pendingProposals.pop();
-        delete proposal_indexInPending[idProposal];       
+        removeFromArrayAndMapping(pendingProposals, proposal_indexInPending, idProposal);       
         approvedProposals.push(idProposal); //Aumentamos el número de propuestas
         //Convertir tokens a weis para convertirlos en presupuesto
         uint256 tokensValue = proposals[idProposal]._numTokens * votingContract.getTokenPrice();
@@ -411,7 +396,6 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         {
             uint256 id = pendingProposals[i];
             proposals[id]._isCanceled=true;
-            numPendingProposals--;
 
             //Tenemos que devolver tokens a los votantes 
             for (uint256 j = 0; j < proposals[id]._voters.length; j++) {  
@@ -453,7 +437,10 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
                             proposal._numTokens
                         )
                     );
-                    // Continuar incluso si falla de momento
+                    // He decidido que si no hay éxito (!success) no revertir, pero para eliminar warning hago el siguiente codigo 
+                    if (!success) {
+                        
+                    }
                 }
 
                 // Devolver tokens a los votantes
@@ -474,7 +461,8 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
                 }
                 proposal._votes = 0;
                 proposal._numTokens = 0;
-                delete proposal._voters;
+                delete proposals[proposalId]._voters;
+                delete proposal_indexInSignalign[proposalId];
             }
         }
 
@@ -492,8 +480,8 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         pendingProposals= new uint256[](0);
         approvedProposals =new uint256[](0);
         numProposals = 0;
-        numPendingProposals = 0;
 
         /*AÑADIR UN EVENTO QUIZÁS PARA QUE DESDE FUERA PUEDAN SABER QUE SE HA CERRADO LA VOTACIÓN*/
+        emit VotingClosed();
     }
 }
