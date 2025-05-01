@@ -19,7 +19,6 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
     mapping (uint256 => mapping (address => bool)) proposal_participant_hasVoted; //Rastrea si un usuario ha votado en una propuesta.
     mapping (uint256 => uint256) proposal_indexInPending; //Para cada propuesta (id) cuál es su indice en el array de pending.
 
-    /*PARTICIPANTES*/
     uint256  numParticipants;
     mapping (address=>bool)  participants;//Para ver si están registrados
 
@@ -37,7 +36,6 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         bool _isApproved;
         bool _isCanceled;
 
-        /*Añado este atributo para no tener que hacer un for en la función de checkAndExecuteProposal*/
         uint256 _numTokens; //Número total de tokens que hay en la propuesta
         address[] _voters;//Necesitamos añadir un array con los addresses de los votantes para recorrerlos en la función de closeVoting
     }
@@ -62,9 +60,16 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         numPendingProposals=0;
         totalBudget=0;
     }
+
+    /*EVENTOS*/
+    event VotingOpen();
+    event VotingClosed();
+    event NewProposal(uint256 indexed proposalId);
+    event ProposalCanceled(uint256 indexed proposalId);
+    event ProposalApproved(uint256 indexed proposalId);
+
     
     /* MODIFICADORES */
-
     modifier onlyOwner() { 
         require(msg.sender == _owner, "Debes ser el owner del contrato para poder hacer esto.");_;
     }
@@ -94,6 +99,13 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         return firstPart +numPendingProposals;       
     }
 
+    function transferTokens(address to, uint256 amount) internal {
+        require(amount >0, "Debes tranferir mas tokens que 0");
+        require(to != address(0), "El address debe existir");
+        (bool success, ) = address(votingContract).call{gas:100000}(abi.encodeWithSelector(IERC20.transfer.selector, to, amount));
+        require(success, "La transferencia de tokens ha fallado.");
+    }
+
     /* FUNCIONES QUE SE PIDEN EN EL ENUNCIADO*/
     
     /*DONE*/
@@ -102,13 +114,14 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         require(msg.value >0, "El presupuesto inicial debe ser mayor que cero");
         totalBudget = msg.value;
         isVotingOpen=true;
+        emit VotingOpen();
     }
 
     /*DONE*/
     function addParticipant () external payable{
         //Cuando se inscribe el participante debe transferir Ether para comprar Tokens (al menos uno).
-        require(msg.value >= votingContract.getTokenPrice(), "No estas aportando suficiente Ether como para comprar tokens. Necesitas poder comprar 1 al menos.");
-        require(!participants[msg.sender], "Participante ya esta registrado. No puedes registrarte otra vez");
+        require(msg.value >= votingContract.getTokenPrice(), "No estas aportando suficiente Ether");
+        require(!participants[msg.sender], "Participante ya esta activo.");
 
         //Calculamos cuántos tokens podemos emitir con value aportado por el participante
         uint256 numTokens= msg.value/votingContract.getTokenPrice();
@@ -166,6 +179,7 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         newProposal._isApproved=false;
         newProposal._isCanceled=false;
 
+        emit NewProposal(proposalId);
         return proposalId;
     }
     
@@ -199,7 +213,7 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
             if (votes >0) {
                 uint256 tokensReturn = votes*votes;
                 if (tokensReturn >0) {
-                    //Transferirlos
+                    transferTokens(voter,tokensReturn);
                 }
             }   
             delete proposal_votes_participant[idProposal][voter];
@@ -210,6 +224,7 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         proposals[idProposal]._votes=0;
         proposals[idProposal]._numTokens=0;
         delete proposals[idProposal]._voters;
+        emit ProposalCanceled(idProposal);
     }
 
     /*DONE*/
@@ -330,10 +345,7 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         uint256 tokensToReturn = (currentVotes*currentVotes)- (votesAfterWithdraw*votesAfterWithdraw);
         require(IERC20(address(votingContract)).balanceOf(address(this))>= tokensToReturn, "No tenemos suficientes tokens para retirarlos");
 
-        //Lo tendremos que cambiar porque lo de Transfer limita el gas. 
-        bool success = IERC20(address(votingContract)).transfer(msg.sender,tokensToReturn);
-        require(success, "La transferencia de Tokens ha fallado"); 
-
+        transferTokens(msg.sender, tokensToReturn);
         //Actualizamos el número de votos y tokens
         proposal_votes_participant[idProposal][msg.sender] = votesAfterWithdraw;
         proposals[idProposal]._votes -= voteAmount;
@@ -365,7 +377,7 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         proposals[idProposal]._isApproved = true;
         numPendingProposals--;
         uint256 index = proposal_indexInPending[idProposal];
-        uint256 last = pendingProposals.length;-1;
+        uint256 last = pendingProposals.length-1;
 
         if(index != last){
             uint256 lastProposalId =pendingProposals[last];
@@ -382,23 +394,14 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         //Reducir el presupuesto con el presupuesto de la propuesta
         totalBudget -= proposals[idProposal]._budget;
 
-        //Ejecutar la propuesta, tenemos que tener en cuenta el límite de gas. Tengo dudas de si se hace aquí o en un require.
-        //Obviamente si tenemos que poner un límite concreto de gas IMPOSIBLE USAR TRANSFER.
-        /*
 
-        abi.encodeWithSelector: Codifica una llamada a la función executeProposal con los argumentos:
-        idProposal: El identificador de la propuesta.
-        proposals[idProposal]._votes: El número de votos asociados con la propuesta.
-        proposals[idProposal]._numTokens: El número de tokens asociados con la propuesta (quizás representando el poder de voto o algún otro peso).
-        Esta codificación genera los datos binarios que se envían al contrato _contractProposal para invocar la función executeProposal con los argumentos especificados.
-        No me dejaba hacerlo de otra forma.
-        */
         (bool success, )= proposals[idProposal]._contractProposal.call{value: proposals[idProposal]._budget, gas: 100000}
         (
             /*Tengo que usar lo de selector para poder llamar a executeProposal*/
             abi.encodeWithSelector(IExecutableProposal.executeProposal.selector,idProposal, proposals[idProposal]._votes, proposals[idProposal]._numTokens)
         );
         require(success, "La ejecucion de la propuesta ha fallado");
+        emit ProposalApproved(idProposal);
     }
 
     function closeVoting () external onlyOwner onlyAfterOpen{       
@@ -419,10 +422,7 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
                     proposal_votes_participant[id][voter]=0;
                     proposal_participant_hasVoted[id][voter]= false;
                     if (tokensToReturn >0) {
-
-                        /*IMPORTANTE, NO SE HACE CON TRANSFER PORQUE LIMITA EL GAS, CAMBIAR POR CALL.*/
-                        IERC20(address(votingContract)).transfer(voter, tokensToReturn);
-                        //Continuar incluso si falla para no bloquear.
+                        transferTokens(voter, tokensToReturn);
                     }
                 }
                 delete proposal_votes_participant[id][voter];
@@ -465,8 +465,7 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
                         proposal_votes_participant[proposalId][voter]= 0;
                         proposal_participant_hasVoted[proposalId][voter]= false;
                         if (tokensToReturn > 0) {
-                            //Esto tendremos que cambiarlo
-                            IERC20(address(votingContract)).transfer(voter, tokensToReturn);
+                            transferTokens(voter, tokensToReturn);
                         }
                     }
                     delete proposal_votes_participant[proposalId][voter];

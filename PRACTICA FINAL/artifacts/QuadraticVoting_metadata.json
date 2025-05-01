@@ -22,6 +22,57 @@
 				"type": "constructor"
 			},
 			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "uint256",
+						"name": "proposalId",
+						"type": "uint256"
+					}
+				],
+				"name": "NewProposal",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "uint256",
+						"name": "proposalId",
+						"type": "uint256"
+					}
+				],
+				"name": "ProposalApproved",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "uint256",
+						"name": "proposalId",
+						"type": "uint256"
+					}
+				],
+				"name": "ProposalCanceled",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [],
+				"name": "VotingClosed",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [],
+				"name": "VotingOpen",
+				"type": "event"
+			},
+			{
 				"inputs": [],
 				"name": "_owner",
 				"outputs": [
@@ -399,18 +450,18 @@
 			"bytecodeHash": "ipfs"
 		},
 		"optimizer": {
-			"enabled": false,
-			"runs": 200
+			"enabled": true,
+			"runs": 100
 		},
 		"remappings": []
 	},
 	"sources": {
 		"PRACTICA FINAL/QuadraticVoting.sol": {
-			"keccak256": "0xa667b18ac922a659990a376e06639650c5b659225e97b3e5f7977c0cc01c7b28",
+			"keccak256": "0xe1abbc3a156a568b05dce32a3c8be868705c16cc598ba811f520243d43f33b75",
 			"license": "GPL-3.0",
 			"urls": [
-				"bzz-raw://5b7e6b138ac65989484d2a02b5bbd3067b4c3451c0f9044cab0531f7f5cb5a69",
-				"dweb:/ipfs/QmYB4r5A34XaZRQRnwxVJEy8A7f2tfaZgirFgwkBgb5PDG"
+				"bzz-raw://245412305cc0f63fa065667ffa09325e13d7b54e8eaa1fb216e6cb2fbf79e14c",
+				"dweb:/ipfs/QmRV5y6vVQ2CaT6o9xQoA8v5JW7WsCwMjStGc3PXCrJ2Wv"
 			]
 		},
 		"PRACTICA FINAL/VotingContract.sol": {
