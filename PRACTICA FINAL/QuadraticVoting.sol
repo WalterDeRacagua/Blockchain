@@ -17,7 +17,7 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
     mapping (uint256 => mapping (address => uint256)) proposal_votes_participant; //Número de votos por participante en una propuesta
     mapping (uint256 => mapping (address => uint256)) proposal_participant_index; //Indice en el array del votante correspondiente para esa propuesta.
     mapping (uint256 => mapping (address => bool)) proposal_participant_hasVoted; //Rastrea si un usuario ha votado en una propuesta.
-
+    mapping (uint256 => uint256) proposal_indexInPending; //Para cada propuesta (id) cuál es su indice en el array de pending.
 
     /*PARTICIPANTES*/
     uint256  numParticipants;
@@ -84,6 +84,16 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         require(!proposals[idProposal]._isApproved, "La propuesta ya ha sido aprobada y no puedes ejecutar la funcion.");_; 
     }
 
+    /*FUNCIONES AUXILIARES*/
+    function calculateThresold(uint256 idProposal) internal view returns (uint256) {
+        if (totalBudget==0) {
+            return type(uint256).max;
+        }
+        // Proposal storage p = proposals[idProposal];
+        uint256 firstPart = (2e17 + (proposals[idProposal]._budget*1e18/totalBudget)) * numParticipants/1e18;
+        return firstPart +numPendingProposals;       
+    }
+
     /* FUNCIONES QUE SE PIDEN EN EL ENUNCIADO*/
     
     /*DONE*/
@@ -140,6 +150,8 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
             /*Aumentamos el número de propuestas pendientes. Las propuestas pendientes solo pueden ser de financiacion*/
             numPendingProposals++;
             pendingProposals.push(proposalId);
+            proposal_indexInPending[proposalId]= pendingProposals.length -1;
+            newProposal._umbral = calculateThresold(proposalId);
         }
         else {
             newProposal._isSignaling= true;
@@ -167,21 +179,37 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
 
         //Si es de financiación este bucle lo podemos eliminar.
         if (!proposals[idProposal]._isSignaling){ 
-
             numPendingProposals--;
-
-            for (uint256 i = 0; i < pendingProposals.length; i++) {
-                if (pendingProposals[i] == idProposal) {
-                    pendingProposals[i] = pendingProposals[pendingProposals.length - 1];
-                    pendingProposals.pop();
-                    break;
-                }
+            uint256 index = proposal_indexInPending[idProposal];
+            uint256 last = pendingProposals.length-1;
+            if(index !=last){
+                uint256 lastProposalId= pendingProposals[last];
+                pendingProposals[index]= lastProposalId;
+                proposal_indexInPending[lastProposalId]=index;
             }
+            pendingProposals.pop();
+            delete proposal_indexInPending[idProposal];
         }
 
-        /*NO TENEMOS QUE QUITAR DEL ARRAY PORQUE NO SE PUEDE HACER UN POP COMO EN JAVA */
-
         /*FALTA DEVOLVER LOS TOKENS COMPRADOS.*/
+        for (uint256 i=0; i <proposals[idProposal]._voters.length; i++) 
+        {
+            address voter = proposals[idProposal]._voters[i];
+            uint256 votes = proposal_votes_participant[idProposal][voter];
+            if (votes >0) {
+                uint256 tokensReturn = votes*votes;
+                if (tokensReturn >0) {
+                    //Transferirlos
+                }
+            }   
+            delete proposal_votes_participant[idProposal][voter];
+            delete proposal_participant_index[idProposal][voter];
+            delete proposal_participant_hasVoted[idProposal][voter];
+        }
+
+        proposals[idProposal]._votes=0;
+        proposals[idProposal]._numTokens=0;
+        delete proposals[idProposal]._voters;
     }
 
     /*DONE*/
@@ -336,13 +364,16 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
 
         proposals[idProposal]._isApproved = true;
         numPendingProposals--;
-        for (uint256 i = 0; i < pendingProposals.length; i++) {
-            if (pendingProposals[i] == idProposal) {
-                pendingProposals[i] = pendingProposals[pendingProposals.length - 1];
-                pendingProposals.pop();
-                break;
-            }
+        uint256 index = proposal_indexInPending[idProposal];
+        uint256 last = pendingProposals.length;-1;
+
+        if(index != last){
+            uint256 lastProposalId =pendingProposals[last];
+            pendingProposals[index]= lastProposalId;
+            proposal_indexInPending[lastProposalId]= index;
         }
+        pendingProposals.pop();
+        delete proposal_indexInPending[idProposal];       
         approvedProposals.push(idProposal); //Aumentamos el número de propuestas
         //Convertir tokens a weis para convertirlos en presupuesto
         uint256 tokensValue = proposals[idProposal]._numTokens * votingContract.getTokenPrice();
@@ -362,12 +393,11 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
         Esta codificación genera los datos binarios que se envían al contrato _contractProposal para invocar la función executeProposal con los argumentos especificados.
         No me dejaba hacerlo de otra forma.
         */
-        (bool success, )= proposals[idProposal]._contractProposal.call{value: proposals[idProposal]._budget, gas: 10000}
+        (bool success, )= proposals[idProposal]._contractProposal.call{value: proposals[idProposal]._budget, gas: 100000}
         (
             /*Tengo que usar lo de selector para poder llamar a executeProposal*/
             abi.encodeWithSelector(IExecutableProposal.executeProposal.selector,idProposal, proposals[idProposal]._votes, proposals[idProposal]._numTokens)
         );
-
         require(success, "La ejecucion de la propuesta ha fallado");
     }
 
@@ -398,6 +428,7 @@ contract QuadraticVoting{ //Contrato para la votación cuadrática.
                 delete proposal_votes_participant[id][voter];
                 delete proposal_participant_index[id][voter];
                 delete proposal_participant_hasVoted[id][voter];
+                delete  proposal_indexInPending[id];
             }
 
             //Ya no tiene votos la propuesta

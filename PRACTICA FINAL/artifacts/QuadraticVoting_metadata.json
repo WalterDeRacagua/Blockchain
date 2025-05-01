@@ -399,18 +399,18 @@
 			"bytecodeHash": "ipfs"
 		},
 		"optimizer": {
-			"enabled": true,
-			"runs": 201
+			"enabled": false,
+			"runs": 200
 		},
 		"remappings": []
 	},
 	"sources": {
 		"PRACTICA FINAL/QuadraticVoting.sol": {
-			"keccak256": "0x2b08030f7e13131ffb994d5b5775c18482025eeabb0ab4981b36e386f55464ce",
+			"keccak256": "0xa667b18ac922a659990a376e06639650c5b659225e97b3e5f7977c0cc01c7b28",
 			"license": "GPL-3.0",
 			"urls": [
-				"bzz-raw://4a8063395a6792ce3f6ec457648b18b6b93705f1c6832713cb4683bcbe98d77b",
-				"dweb:/ipfs/QmcttN77TCzDfNjCk1gkwtpRWJ3fzbHc9YsTGWyp31b2dS"
+				"bzz-raw://5b7e6b138ac65989484d2a02b5bbd3067b4c3451c0f9044cab0531f7f5cb5a69",
+				"dweb:/ipfs/QmYB4r5A34XaZRQRnwxVJEy8A7f2tfaZgirFgwkBgb5PDG"
 			]
 		},
 		"PRACTICA FINAL/VotingContract.sol": {
