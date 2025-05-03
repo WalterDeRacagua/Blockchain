@@ -142,6 +142,19 @@
 			},
 			{
 				"inputs": [],
+				"name": "getAllowance",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
 				"name": "getApprovedProposals",
 				"outputs": [
 					{
@@ -154,11 +167,30 @@
 				"type": "function"
 			},
 			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "p",
+						"type": "address"
+					}
+				],
+				"name": "getBalanceParticipant",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
 				"inputs": [],
 				"name": "getERC20",
 				"outputs": [
 					{
-						"internalType": "address",
+						"internalType": "contract VotingContract",
 						"name": "",
 						"type": "address"
 					}
@@ -296,7 +328,7 @@
 				"inputs": [
 					{
 						"internalType": "uint256",
-						"name": "tokensToReturn",
+						"name": "tokensToSell",
 						"type": "uint256"
 					}
 				],
@@ -378,19 +410,19 @@
 			]
 		},
 		"PRACTICA FINAL/QuadraticVoting.sol": {
-			"keccak256": "0xb16294e0fc03836ffb1fbdce9340dff8a450c003407df527d9063c0e5adf677b",
+			"keccak256": "0x94234677151d4f607d93632127e99386657b0cb5820a50fc87be82a240a9bbd3",
 			"license": "GPL-3.0",
 			"urls": [
-				"bzz-raw://78abdf066ddce775a8ad682222feae74c2a884372714a49343245e6de61401c5",
-				"dweb:/ipfs/QmbPTPe95EhNcZot6EbbtdZaszDPTr22MNpmhaoBCjtEir"
+				"bzz-raw://1d416af495cfc4278728a1e63abea1f5ba34be97cfd2ae0f90c30d3567ffed18",
+				"dweb:/ipfs/QmfJxS6nmiTF8cs3EKNkjQQz6D5T7VtRJp8x44Xh8ctwL6"
 			]
 		},
 		"PRACTICA FINAL/VotingContract.sol": {
-			"keccak256": "0xcc0a74b190cde1394d5b9cb9857f5c32bf9055ba3244d9102eb6eeb86181c192",
+			"keccak256": "0x4420ec292579340b2016dfe80e53e6d9f14a62e12f22955c4cfaf49e51873cd8",
 			"license": "GPL-3.0",
 			"urls": [
-				"bzz-raw://4e722090e0f8413a9729f72923e30a4c2a81effedb06018da6e702ca26718f97",
-				"dweb:/ipfs/QmRt6PvPe53CbJyYa1gZXSTrRdhFsMdrt2TXK4WSQ7euj7"
+				"bzz-raw://cede5fb83582c091dda092357eca908861742aacda38e54fa2b6a7462ed09086",
+				"dweb:/ipfs/QmQa7xRCRcu7HsszrRd19fMLZQYfmne8FENRWZBQr3HaXY"
 			]
 		},
 		"https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/interfaces/draft-IERC6093.sol": {

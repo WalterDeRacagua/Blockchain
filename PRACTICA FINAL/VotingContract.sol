@@ -17,6 +17,7 @@ contract VotingContract is ERC20{
         tokenPrice=_tokenPrice;
         maxTokens=_maxTokens; 
         mintedTokens=0;
+        _owner = msg.sender;
     }
 
     modifier onlyOwner() {
