@@ -276,7 +276,6 @@ contract QuadraticVoting{
         return allowance; 
     }
 
-    /*NO DICE NADA PERO YO SUPONGO QUE HAY QUE LLAMAR SOLO SI LA VOTACIÓN ESTÁ ABIERTA.*/
     function stake (uint256 idProposal, uint256 voteAmount) external onlyAfterOpen onlyProposalExist(idProposal) onlyExistentParticipants  
     onlyNotCanceled(idProposal) onlyNotApproved(idProposal){
         require(voteAmount >0, "No depositar menos 1 voto");
@@ -288,10 +287,8 @@ contract QuadraticVoting{
         //¿Cuántos tokens necesitará?
         uint256 tokensNeeded = (totalVotes*totalVotes)-(currentVotes*currentVotes);
 
-        IERC20(address(votingContract)).approve(address(this), tokensNeeded);
-
+        //Comprobación de que el participante ha permitido al contrato usar estos tokens
         require(IERC20(address(votingContract)).allowance(msg.sender,address(this)) >= tokensNeeded, "No tienes suficientes tokens");
-
 
         bool success = IERC20(address(votingContract)).transferFrom(msg.sender, address(this), tokensNeeded);
         require(success, "La transferencia fallo"); 
