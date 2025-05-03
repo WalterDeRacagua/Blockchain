@@ -1,6 +1,6 @@
 {
 	"compiler": {
-		"version": "0.8.26+commit.8a97fa7a"
+		"version": "0.8.29+commit.ab55807c"
 	},
 	"language": "Solidity",
 	"output": {
@@ -410,11 +410,11 @@
 			]
 		},
 		"PRACTICA FINAL/QuadraticVoting.sol": {
-			"keccak256": "0x515a3a6732d4790a8f170e081ee6e6a3be2c6a9b96e4e5b60d2b73d1e5806c04",
+			"keccak256": "0x2f1d66feec598782a87c69074b56f535cadb08f34fbbca1442594bef2d582e6d",
 			"license": "GPL-3.0",
 			"urls": [
-				"bzz-raw://34b38dcbf76d68bf85d8d80df47127b356bd072d77fa0c03b7f3617a62dd9126",
-				"dweb:/ipfs/QmQqeDVDdwyF6B6jFnJkmiTjgiUDP6QFdTNExskUMtrr8U"
+				"bzz-raw://5d46c53ca98ec6b5ace806091faa6e205ae04c45ca4d7c41e5f4e0b4d31e7a39",
+				"dweb:/ipfs/QmbP4y1KdVb5Da32FswX1NRFhVWDVwDXAjx6KVNBRTr483"
 			]
 		},
 		"PRACTICA FINAL/VotingContract.sol": {

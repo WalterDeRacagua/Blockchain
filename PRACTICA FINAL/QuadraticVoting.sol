@@ -43,6 +43,9 @@ contract QuadraticVoting{
     uint256[] approvedProposals;
     uint256[] signalingProposals; //Propuestas de signaling para evitar tener que hacer bucles en getters. Guardamos los ids.
 
+    /*Para evitar la reentrada*/
+    bool locked =false;
+
     //constructor de quadratic voting.
     constructor(uint256 _tokenPrice, uint256 _maxTokens) {
         require(_tokenPrice >0, "Precio tokens ha de ser>0");
@@ -90,9 +93,12 @@ contract QuadraticVoting{
     }
 
     function transferTokens(address to, uint256 amount) internal {
+        require(!locked, "Bloqueado");
         require(amount >0, "Cantidad > 0");
         require(to != address(0), "El address debe existir");
+        locked=true;
         (bool success, ) = address(votingContract).call{gas:100000}(abi.encodeWithSelector(IERC20.transfer.selector, to, amount));
+        locked = false;
         require(success, "La transferencia de tokens ha fallado.");
     }
 
@@ -229,15 +235,18 @@ contract QuadraticVoting{
 
     /*DONE*/
     function sellTokens (uint256 tokensToSell)  external onlyExistentParticipants {
+        require(!locked, "bloqueado");
         require(tokensToSell > 0, "cantidad inferior a 1");
         require(votingContract.balanceOf(msg.sender)>= tokensToSell, "No tienes tokens suficientes");
 
         uint256 refund = tokensToSell * votingContract.getTokenPrice();
         require(address(this).balance >= refund, "El contrato no tiene recursos");
 
-        votingContract.burn(msg.sender, tokensToSell); //Los borramos de la cuenta del contrato para no estar volviendo
+        votingContract.burn(msg.sender, tokensToSell); 
 
+        locked=true;
         (bool success, )= msg.sender.call{value: refund}("");
+        locked=false;
         require(success, "La transferencia fallo");
     }
 
@@ -355,10 +364,11 @@ contract QuadraticVoting{
 
     function _checkAndExecuteProposal (uint256 idProposal) internal onlyAfterOpen onlyProposalExist(idProposal) onlyNotCanceled(idProposal)
     onlyNotApproved(idProposal){
+        require(!locked, "Bloqueado");
         Proposal storage p = proposals[idProposal];
-        require(!p._isSignaling, "La propuesta  financiacion");
-        require(p._contractProposal != address(0), "La propuesta sin contrato de votacion asociado");
-        require(totalBudget > p._budget, "presupuesto debe ser > al demandado en la propuesta");
+        require(!p._isSignaling, "propuesta signaling");
+        require(p._contractProposal != address(0), "propuesta sin contrato de votacion");
+        require(totalBudget > p._budget, "presupuesto < al demandado en la propuesta");
 
         p._isApproved = true;
         removeFromArrayAndMapping(pendingProposals, proposal_indexInPending, idProposal);       
@@ -370,13 +380,15 @@ contract QuadraticVoting{
         //Reducir el presupuesto con el presupuesto de la propuesta
         totalBudget -= p._budget;
 
-
+        locked =true;
         (bool success, )= p._contractProposal.call{value: p._budget, gas: 100000}
         (
             /*Tengo que usar lo de selector para poder llamar a executeProposal*/
             abi.encodeWithSelector(IExecutableProposal.executeProposal.selector,idProposal, p._votes, p._numTokens)
         );
-        require(success, "La ejecucion ha fallado");
+        locked=false;
+
+        require(success, "Error");
         emit ProposalApproved(idProposal);
     }
 
@@ -462,7 +474,7 @@ contract QuadraticVoting{
             uint256 budgetToTransfer = totalBudget;
             totalBudget = 0;
             (bool success, ) =_owner.call{value: budgetToTransfer}("");
-            require(success, "transferencia  ha fallado.");
+            require(success, "Error");
         }
 
         // Reiniciar estado para nuevo proceso de votación
