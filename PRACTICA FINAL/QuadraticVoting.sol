@@ -84,11 +84,13 @@ contract QuadraticVoting{
 
     /*FUNCIONES AUXILIARES*/
     function calculateThresold(uint256 idProposal) internal view returns (uint256) {
+        /*Protegemos de la división por 0 devolviendo el máximo uint de forma que es improbable que alguna propuesta se pueda aprobar.*/
         if (totalBudget==0) {
             return type(uint256).max;
         }
-        // Proposal storage p = proposals[idProposal];
-        uint256 firstPart = (2e17 + (proposals[idProposal]._budget*1e18/totalBudget)) * numParticipants/1e18;
+        Proposal storage p = proposals[idProposal];
+        /*Posible desbordamiento si p._budget es muy elevado. Pero se tira para atrás si */
+        uint256 firstPart = (2e17 + (p._budget*1e18/totalBudget)) * numParticipants/1e18;
         return firstPart + pendingProposals.length;       
     }
 
@@ -226,11 +228,22 @@ contract QuadraticVoting{
 
     /*DONE*/
     function buyTokens() external payable onlyExistentParticipants {
-        require(msg.value >= votingContract.getTokenPrice(), "Debes enviar el Ether necesario");
+        require(!locked, "Bloqueado");
+        require(msg.value >= votingContract.getTokenPrice() &&msg.value >0, "Debes envia Ether necesario");
         //Comprobamos cuántos tokens podría comprar con el value aportado 
-        uint256 boughtTokens = msg.value/ votingContract.getTokenPrice();
+        uint256 tokenPrice = votingContract.getTokenPrice();
+        uint256 boughtTokens = msg.value/tokenPrice;       
+        uint256 realCost = boughtTokens * tokenPrice;
+        uint256 refund = msg.value - realCost;
 
-        votingContract.mint(msg.sender, boughtTokens);
+        //Evitamos la reentrada para no tener problemas de vulnerabilidades en el caso de que tengamos que devolver algún wei/ether.
+        //Para ello pongo el código al final y pongo locked a true cuando hace el call. Hacemos call en vez de transfer para no limitar a poco gas.
+        if (refund >0) {
+                locked = true;
+                (bool success, ) = msg.sender.call{value:refund}("");
+                locked = false;
+                require(success, "Fallo");
+        }
     }
 
     /*DONE*/
@@ -247,6 +260,7 @@ contract QuadraticVoting{
         locked=true;
         (bool success, )= msg.sender.call{value: refund}("");
         locked=false;
+        
         require(success, "La transferencia fallo");
     }
 
@@ -297,7 +311,7 @@ contract QuadraticVoting{
         uint256 tokensNeeded = (totalVotes*totalVotes)-(currentVotes*currentVotes);
 
         //Comprobación de que el participante ha permitido al contrato usar estos tokens
-        require(IERC20(address(votingContract)).allowance(msg.sender,address(this)) >= tokensNeeded, "No tienes suficientes tokens");
+        // require(IERC20(address(votingContract)).allowance(msg.sender,address(this)) >= tokensNeeded, "No tienes suficientes tokens");
 
         bool success = IERC20(address(votingContract)).transferFrom(msg.sender, address(this), tokensNeeded);
         require(success, "La transferencia fallo"); 
