@@ -241,6 +241,7 @@ contract QuadraticVoting{
         uint256 realCost = boughtTokens * tokenPrice;
         uint256 refund = msg.value - realCost;
 
+        votingContract.mint(msg.sender, boughtTokens);
         //Evitamos la reentrada para no tener problemas de vulnerabilidades en el caso de que tengamos que devolver algún wei/ether.
         //Para ello pongo el código al final y pongo locked a true cuando hace el call. Hacemos call en vez de transfer para no limitar a poco gas.
         if (refund >0) {
