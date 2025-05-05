@@ -49,7 +49,7 @@ contract VotingContract is ERC20{
         require(destDir != address(0), "La direccion destino no es valida");
         //Verificar que no hayan excedido el numero máximo de tokens
         require(tokensEliminados>0, "No se puede eliminar 0 ni un numero negativo de tokens.");
-
+        mintedTokens -= tokensEliminados;
         /*FUNCIÓN BURN DE ERC20*/
         _burn(destDir, tokensEliminados);
     }

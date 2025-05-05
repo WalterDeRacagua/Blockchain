@@ -572,11 +572,11 @@
 	},
 	"sources": {
 		"PRACTICA FINAL/VotingContract.sol": {
-			"keccak256": "0x044d74669ac3b5af8da625ce1032259064b0be22e521a6216178e9a1ab6cdf61",
+			"keccak256": "0xa2ca0732c5b12b2ad744f9a5ff23e4df51f6b52c5f3a3d2d1142da6b108a1fe8",
 			"license": "GPL-3.0",
 			"urls": [
-				"bzz-raw://10c68eb434044bcc9285d962109cd41811434355e7ae89bb68bb921b03595486",
-				"dweb:/ipfs/QmVbMzPpXX3uogBkZMHPqG2Tfe4XgJzW8cNucSzWrK81cH"
+				"bzz-raw://8ba275d8cf42c691ac66bb3dcd67b1510468feeebb3cd69180aa11245d19209c",
+				"dweb:/ipfs/QmVBBtYWrXNHYrmCuRH4LgCSv8PvQonZGRaScPaaJ5nYdQ"
 			]
 		},
 		"https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/interfaces/draft-IERC6093.sol": {

@@ -99,12 +99,9 @@ contract QuadraticVoting{
     }
 
     function transferTokens(address to, uint256 amount) internal {
-        require(!locked, "Bloqueado");
         require(amount >0, "Cantidad > 0");
         require(to != address(0), "El address debe existir");
-        locked=true;
         (bool success, ) = address(votingContract).call{gas:100000}(abi.encodeWithSelector(IERC20.transfer.selector, to, amount));
-        locked = false;
         require(success, "La transferencia de tokens ha fallado.");
     }
 
@@ -268,6 +265,10 @@ contract QuadraticVoting{
         locked=true;
         (bool success, )= msg.sender.call{value: refund}("");
         locked=false;
+
+        /*
+            Damos por hecho que el participante puede quedarse con 0 tokens porque puede luego comprar.
+        */
         
         require(success, "La transferencia fallo");
     }
@@ -349,6 +350,7 @@ contract QuadraticVoting{
     /*Intentar buscar un mapping y arrays para reducir el coste del bucle for.*/
     function withdrawFromProposal (uint256 voteAmount, uint256 idProposal) external onlyAfterOpen onlyProposalExist(idProposal) 
     onlyExistentParticipants  onlyNotCanceled(idProposal) onlyNotApproved(idProposal){
+        require(!locked);
         require(voteAmount >0, "Necesitas un voto al menos."); 
         require(proposal_votes_participant[idProposal][msg.sender] >= voteAmount, "Estas intentando retirar mas votos" );       
         //Calcular cuántos votos tenemos ahora, y con cuantos nos vamos a quedar tras retirar los votos.
@@ -359,8 +361,7 @@ contract QuadraticVoting{
         require(IERC20(address(votingContract)).balanceOf(address(this))>= tokensToReturn, "No se puede retirar");
 
         Proposal storage p = proposals[idProposal];
-
-        transferTokens(msg.sender, tokensToReturn);
+    
         //Actualizamos el número de votos y tokens
         proposal_votes_participant[idProposal][msg.sender] = votesAfterWithdraw;
         p._votes -= voteAmount;
@@ -380,6 +381,10 @@ contract QuadraticVoting{
             p._voters.pop();
             delete proposal_participant_index[idProposal][msg.sender];
         }
+
+        locked=true;
+        transferTokens(msg.sender, tokensToReturn);
+        locked=false;
     }
 
     function _checkAndExecuteProposal (uint256 idProposal) internal onlyAfterOpen onlyProposalExist(idProposal) onlyNotCanceled(idProposal)
@@ -395,6 +400,11 @@ contract QuadraticVoting{
         approvedProposals.push(idProposal); //Aumentamos el número de propuestas
         //Convertir tokens a weis para convertirlos en presupuesto
         uint256 tokensValue = p._numTokens * votingContract.getTokenPrice();
+
+        /*
+             Esto se explica en openVoting.
+        */
+
         totalBudget += tokensValue;
 
         //Reducir el presupuesto con el presupuesto de la propuesta
@@ -404,6 +414,9 @@ contract QuadraticVoting{
         (bool success, )= p._contractProposal.call{value: p._budget, gas: 100000}
         (
             /*Tengo que usar lo de selector para poder llamar a executeProposal*/
+            // por que utilizar esto y no IERC20(token).transfer(_to, amount)
+            // para controlar manualmente el gas que emplear
+            // asi capturas con el success los posibles sin revertir
             abi.encodeWithSelector(IExecutableProposal.executeProposal.selector,idProposal, p._votes, p._numTokens)
         );
         locked=false;
@@ -413,7 +426,9 @@ contract QuadraticVoting{
     }
 
     function closeVoting () external onlyOwner onlyAfterOpen{       
+        require(!locked, "Bloqueado");
 
+        locked = true;
         /*Coste (p*v) con p siendo el numero de propuestas de financiación y v los votantes de esa propuesta*/
         for (uint256 i=0; i < pendingProposals.length; i++) 
         {
@@ -484,15 +499,7 @@ contract QuadraticVoting{
                 delete proposal_indexInSignalign[proposalId];
             }
         }
-
-        // Transferir presupuesto no gastado al propietario
-        if (totalBudget > 0) {
-            uint256 budgetToTransfer = totalBudget;
-            totalBudget = 0;
-            (bool success, ) =_owner.call{value: budgetToTransfer}("");
-            require(success, "Error");
-        }
-
+      
         // Reiniciar estado para nuevo proceso de votación
         isVotingOpen = false;
         signalingProposals = new uint256[](0);
@@ -500,6 +507,15 @@ contract QuadraticVoting{
         approvedProposals =new uint256[](0);
         numProposals = 0;
 
+          // Transferir presupuesto no gastado al propietario
+        if (totalBudget > 0) {
+            uint256 budgetToTransfer = totalBudget;
+            totalBudget = 0;
+            (bool success, ) =_owner.call{value: budgetToTransfer}("");
+            require(success, "Error");
+        }
+
+        locked= false;
         /*AÑADIR UN EVENTO QUIZÁS PARA QUE DESDE FUERA PUEDAN SABER QUE SE HA CERRADO LA VOTACIÓN*/
         emit VotingClosed();
     }
