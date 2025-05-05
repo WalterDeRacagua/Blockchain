@@ -6,7 +6,7 @@ import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contr
 
 contract VotingContract is ERC20{
 
-    uint256 public immutable tokenPrice; //Constante que almacena el precio por token en Wei de los tokens vendidos
+    uint256 public immutable tokenPrice; 
     uint256 public immutable maxTokens; //Constante que almacena el número máximo de tokens a vender.
     uint256 public mintedTokens;//Estos son los tokens que se han emitido 
     address public _owner;
@@ -20,6 +20,10 @@ contract VotingContract is ERC20{
         _owner = msg.sender;
     }
 
+    /*
+    Este modificador nos permite tener un control sobre la emisión y el quemado de tokens en el contrato,
+    lo cual es fundamental para garantizar que un participante no emita los tokens que le venga en gana por ejemplo.
+    */
     modifier onlyOwner() {
         require(msg.sender ==_owner , "Solo puede llamar el owner");
         _;

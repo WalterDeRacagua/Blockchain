@@ -9,11 +9,10 @@ import "./ExecutableProposal.sol";
 contract QuadraticVoting{ 
     VotingContract votingContract; 
     uint256 totalBudget; 
-    address  immutable _owner; //Owner del contrato. Es el que crea el contrato y será siempre el que crea el contrato
+    address immutable _owner; //Owner del contrato. Es el que crea el contrato y será siempre el que crea el contrato
     bool isVotingOpen; //Almacenamos si la votación está abierta.
     mapping (uint256 => mapping (address => uint256)) proposal_votes_participant; //Número de votos por participante en una propuesta
     mapping (uint256 => mapping (address => uint256)) proposal_participant_index; //Indice en el array del votante correspondiente para esa propuesta.
-    mapping (uint256 => mapping (address => bool)) proposal_participant_hasVoted; //Rastrea si un usuario ha votado en una propuesta.
     mapping (uint256 => uint256) proposal_indexInPending; //Para cada propuesta (id) cuál es su indice en el array de pending.
     mapping (uint256 => uint256) proposal_indexInSignalign; //Para cada propuesta (id) de signaling, cuál es su  indice en el array de pending.
 
@@ -91,6 +90,11 @@ contract QuadraticVoting{
         Proposal storage p = proposals[idProposal];
         /*Posible desbordamiento si p._budget es muy elevado. Pero se tira para atrás si */
         uint256 firstPart = (2e17 + (p._budget*1e18/totalBudget)) * numParticipants/1e18;
+        /*
+        2e17 es un 2*10^17 
+        Y multiplico la segunda operación por 1e18 para mantener todo en la misma escala (y divido después por lo mismo)
+        Es como si quisieramos que todo esté en la misma unidad.
+        */
         return firstPart + pendingProposals.length;       
     }
 
@@ -141,6 +145,11 @@ contract QuadraticVoting{
         numParticipants++;        
         //Minteamos los tokens
         votingContract.mint(msg.sender, numTokens);
+
+        /*
+        He decidido no implementar, al igual que en buy tokens, una función que le devuelva al participante los weis de la 
+        compra. Esto es decisión personal porque pienso que lo podemos tomar como una "propina".    
+        */
     }
 
     /*DONE*/
@@ -217,7 +226,6 @@ contract QuadraticVoting{
             }   
             delete proposal_votes_participant[idProposal][voter];
             delete proposal_participant_index[idProposal][voter];
-            delete proposal_participant_hasVoted[idProposal][voter];
         }
 
         p._votes=0;
@@ -320,7 +328,6 @@ contract QuadraticVoting{
         if (currentVotes==0){
             p._voters.push(msg.sender);
             proposal_participant_index[idProposal][msg.sender]= p._voters.length - 1;
-            proposal_participant_hasVoted[idProposal][msg.sender]= true;
         }
 
         //Actualizamos los votos y tokens si ha ido todo guay
@@ -371,7 +378,6 @@ contract QuadraticVoting{
             }
 
             p._voters.pop();
-            proposal_participant_hasVoted[idProposal][msg.sender]= false; //Ya no ha votado en la propuesta
             delete proposal_participant_index[idProposal][msg.sender];
         }
     }
@@ -421,14 +427,12 @@ contract QuadraticVoting{
                 if (numVotesVoter>0) {
                     uint256 tokensToReturn = numVotesVoter * numVotesVoter;
                     proposal_votes_participant[id][voter]=0;
-                    proposal_participant_hasVoted[id][voter]= false;
                     if (tokensToReturn >0) {
                         transferTokens(voter, tokensToReturn);
                     }
                 }
                 delete proposal_votes_participant[id][voter];
                 delete proposal_participant_index[id][voter];
-                delete proposal_participant_hasVoted[id][voter];
                 delete  proposal_indexInPending[id];
             }
 
@@ -467,14 +471,12 @@ contract QuadraticVoting{
                     if (votes > 0) {
                         uint256 tokensToReturn = votes * votes;
                         proposal_votes_participant[proposalId][voter]= 0;
-                        proposal_participant_hasVoted[proposalId][voter]= false;
                         if (tokensToReturn > 0) {
                             transferTokens(voter, tokensToReturn);
                         }
                     }
                     delete proposal_votes_participant[proposalId][voter];
                     delete proposal_participant_index[proposalId][voter];
-                    delete proposal_participant_hasVoted[proposalId][voter];
                 }
                 proposal._votes = 0;
                 proposal._numTokens = 0;
