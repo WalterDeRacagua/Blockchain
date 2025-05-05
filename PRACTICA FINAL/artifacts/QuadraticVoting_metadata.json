@@ -410,11 +410,11 @@
 			]
 		},
 		"PRACTICA FINAL/QuadraticVoting.sol": {
-			"keccak256": "0xf65fe16b48cce8bc8ce70941925fabe22d8d88027fda5c079dea89e9f3217374",
+			"keccak256": "0x75626ba8be21d9d6abda0384e64edb3dfc4ae11a0acfbc3e9d2f839afcf6c726",
 			"license": "GPL-3.0",
 			"urls": [
-				"bzz-raw://06971656e2c7d93f3cad0214ec260464f8fad69a829a11dfabbee192b9bcc341",
-				"dweb:/ipfs/Qmd7ojy77gg7N3Yabku83RxCfAN4VLGKScSy6RoGQjCd4M"
+				"bzz-raw://5c86d7d5a72cb820885311acc1db41f1352a4bfcc9a1b2a69aff013ee6d7ab74",
+				"dweb:/ipfs/QmYpDh8opFkMbdffFuefEQHmBApTSWQkKMoTiKWjeBrqbt"
 			]
 		},
 		"PRACTICA FINAL/VotingContract.sol": {

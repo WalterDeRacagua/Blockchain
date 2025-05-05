@@ -88,7 +88,7 @@ contract QuadraticVoting{
             return type(uint256).max;
         }
         Proposal storage p = proposals[idProposal];
-        /*Posible desbordamiento si p._budget es muy elevado. Pero se tira para atrás si */
+        /*Posible desbordamiento si p._budget es muy elevado. Pero se tira para atrás */
         uint256 firstPart = (2e17 + (p._budget*1e18/totalBudget)) * numParticipants/1e18;
         /*
         2e17 es un 2*10^17 
